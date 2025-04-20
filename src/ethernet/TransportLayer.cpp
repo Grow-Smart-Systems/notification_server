@@ -1,5 +1,5 @@
 #include "TransportLayer.h"
-#include "Settings.h"
+#include "../settings/Settings.h"
 
 TransportLayer::TransportLayer(QObject *parent)
     : QObject{parent}

@@ -35,10 +35,14 @@
 .vscode/
 
 # QT
-
 *.pro.user
 *.pro.user.*
-*.moc
+*.moc*
 *.qrc
 *.qmake.stash
 Makefile*
+
+#project files
+build
+build/*
+notification_server
