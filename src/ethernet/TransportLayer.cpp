@@ -18,8 +18,8 @@ TransportLayer::~TransportLayer()
 
 bool TransportLayer::init()
 {
-    Settings* settings = Settings::getInstance();
-    if(_server->listen(QHostAddress::Any, settings->getListenPort()))
+    Settings* settings = Settings::GetInstance();
+    if(_server->listen(QHostAddress::Any, settings->GetListenPort()))
     {
         qInfo() << "(!) Server listen - address: " << _server->serverAddress().toString() << " port: " << _server->serverPort();
         connect(_server.get(), SIGNAL(newConnection()), this, SLOT(onNewConnection()));
@@ -57,9 +57,8 @@ void TransportLayer::onServerReadyRead()
         return;
 
     const auto sender = qobject_cast<QTcpSocket*>(QObject::sender());
-
-    QTextStream os(sender);
-    os.setAutoDetectUnicode(true);
+    if(!sender)
+        return;
 
     QString text;
     while(sender->bytesAvailable() > 0)
@@ -67,6 +66,8 @@ void TransportLayer::onServerReadyRead()
          text += QString::fromUtf8(sender->readAll());
     }
 
+    QTextStream os(sender);
+    os.setAutoDetectUnicode(true);
     os << "HTTP/1.1 200 Ok\r\n"
           "Content-Type: text/html; charset=\"utf-8\"\r\n"
           "\r\n"

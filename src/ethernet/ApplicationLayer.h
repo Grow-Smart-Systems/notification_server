@@ -24,7 +24,7 @@ public:
      * 
      * \return Возвращает true, если инициализация прошла успешно, иначе false.
      */
-    bool init();
+    bool Init();
 
 protected slots:
 
@@ -51,7 +51,7 @@ private:
 
 signals:
     //! \brief Сигнал на получения запроса
-    void signalNewRequest(HTTPPacket);
+    void signalNewRequest(const HTTPPacket&);
 
 };
 

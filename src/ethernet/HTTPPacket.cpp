@@ -1,6 +1,6 @@
 #include "HTTPPacket.h"
 
-HTTPPacket::HTTPPacket(QString message)
+HTTPPacket::HTTPPacket(const QString& message)
     : QObject{ nullptr }
     , _message(message)
 {
@@ -9,83 +9,100 @@ HTTPPacket::HTTPPacket(QString message)
 HTTPPacket::HTTPPacket(const HTTPPacket& old) : QObject(nullptr)
 {
     setParent(old.parent());
-
-    _message = old.message();
-    _method = old.method();
-    _versionHttp = old.versionHttp();
-    _requestString = old.requestString();
-    _requestStringPath = old.requestStringPath();
-    _requestParameters = old.requestParameters();
-    _hostAddress = old.hostAddress();
-    _hostPort = old.hostPort();
-    _userAgentString = old.userAgentString();
-    _acceptList = old.acceptList();
-    _acceptEncodingList = old.acceptEncodingList();
-    _acceptLanguageList = old.acceptLanguageList();
+    _message = old.Message();
+    _method = old.Method();
+    _versionHttp = old.VersionHttp();
+    _requestString = old.RequestString();
+    _requestStringPath = old.RequestStringPath();
+    _requestParameters = old.RequestParameters();
+    _hostAddress = old.HostAddress();
+    _hostPort = old.HostPort();
+    _userAgentString = old.UserAgentString();
+    _acceptList = old.AcceptList();
+    _acceptEncodingList = old.AcceptEncodingList();
+    _acceptLanguageList = old.AcceptLanguageList();
 }
 
-const QString& HTTPPacket::message() const
+QString HTTPPacket::Message() const
 {
     return _message;
 }
 
-void HTTPPacket::setMessage(const QString& newMessage)
+void HTTPPacket::SetMessage(const QString& newMessage)
 {
     _message = newMessage;
 }
 
-HTTPPacket::METHOD HTTPPacket::method() const
+HTTPPacket::METHOD HTTPPacket::Method() const
 {
     return _method;
 }
 
-const QString& HTTPPacket::versionHttp() const
+QString HTTPPacket::VersionHttp() const
 {
     return _versionHttp;
 }
 
-const QString& HTTPPacket::userAgentString() const
+QString HTTPPacket::UserAgentString() const
 {
     return _userAgentString;
 }
 
-const QHostAddress& HTTPPacket::hostAddress() const
+QHostAddress HTTPPacket::HostAddress() const
 {
     return _hostAddress;
 }
 
-const QStringList& HTTPPacket::acceptLanguageList() const
+QStringList HTTPPacket::AcceptLanguageList() const
 {
     return _acceptLanguageList;
 }
 
-const QStringList& HTTPPacket::acceptEncodingList() const
+QStringList HTTPPacket::AcceptEncodingList() const
 {
     return _acceptEncodingList;
 }
 
-const QStringList& HTTPPacket::acceptList() const
+QStringList HTTPPacket::AcceptList() const
 {
     return _acceptList;
 }
 
-bool HTTPPacket::parse()
+quint16 HTTPPacket::HostPort() const
+{
+    return _hostPort;
+}
+
+QString HTTPPacket::RequestString() const
+{
+    return _requestString;
+}
+
+QString HTTPPacket::RequestStringPath() const
+{
+    return _requestStringPath;
+}
+
+QHash<QString, QString> HTTPPacket::RequestParameters() const
+{
+    return _requestParameters;
+}
+
+bool HTTPPacket::Parse()
 {
     if (_message.isEmpty())
         return false;
-
     _message = _message.trimmed();
-    QStringList lines = _message.split("\n", Qt::SkipEmptyParts);
+    const QStringList lines = _message.split("\n", Qt::SkipEmptyParts);
     if (lines.isEmpty())
         return false;
 
     // Парсим первую строку (request line)
-    QString requestLine = lines.first().trimmed();
-    QStringList requestParts = requestLine.split(" ", Qt::SkipEmptyParts);
+    const QStringList requestParts = lines.first().trimmed().split(" ", Qt::SkipEmptyParts);
     if (requestParts.size() < 3)
         return false;
 
-    QString methodStr = requestParts.at(0).trimmed().toUpper();
+    const QString methodStr = requestParts.at(0).trimmed().toUpper();
     if (methodStr == "GET")
         _method = METHOD::GET;
     else if (methodStr == "POST")
@@ -106,94 +123,73 @@ bool HTTPPacket::parse()
     _acceptEncodingList.clear();
     _acceptLanguageList.clear();
 
-    // Парсим заголовки
-    for (int i = 1; i < lines.size(); ++i)
-    {
-        QString line = lines.at(i).trimmed();
+    // Используем QHash для быстрого поиска нужных заголовков
+    QHash<QString, QString> headers;
+    for (int i = 1; i < lines.size(); ++i) {
+        const QString line = lines.at(i).trimmed();
         if (line.isEmpty())
             continue;
-        if (line.startsWith("Host:", Qt::CaseInsensitive))
-        {
-            QString hostValue = line.mid(5).trimmed();
-            int colonIdx = hostValue.lastIndexOf(":");
-            if (colonIdx > 0) {
-                QString host = hostValue.left(colonIdx).trimmed();
-                QString portStr = hostValue.mid(colonIdx + 1).trimmed();
-                _hostAddress.setAddress(host);
-                _hostPort = portStr.toUShort();
-            }
-            else {
-                _hostAddress.setAddress(hostValue);
-                _hostPort = 80; // по умолчанию
-            }
+        int colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+            QString key = line.left(colonIdx).trimmed().toLower();
+            QString value = line.mid(colonIdx + 1).trimmed();
+            headers.insert(key, value);
         }
-        else if (line.startsWith("User-Agent:", Qt::CaseInsensitive))
-        {
-            _userAgentString = line.mid(11).trimmed();
+    }
+
+    // Host
+    if (headers.contains("host")) {
+        const QString hostValue = headers["host"];
+        int colonIdx = hostValue.lastIndexOf(":");
+        if (colonIdx > 0) {
+            const QString host = hostValue.left(colonIdx).trimmed();
+            const QString portStr = hostValue.mid(colonIdx + 1).trimmed();
+            _hostAddress.setAddress(host);
+            _hostPort = portStr.toUShort();
+        } else {
+            _hostAddress.setAddress(hostValue);
+            _hostPort = 80;
         }
-        else if (line.startsWith("Accept:", Qt::CaseInsensitive))
-        {
-            QString accept = line.mid(7).trimmed();
-            _acceptList = accept.split(",", Qt::SkipEmptyParts);
-            for (auto& s : _acceptList) s = s.trimmed();
-        }
-        else if (line.startsWith("Accept-Encoding:", Qt::CaseInsensitive))
-        {
-            QString acceptEnc = line.mid(15).trimmed();
-            _acceptEncodingList = acceptEnc.split(",", Qt::SkipEmptyParts);
-            for (auto& s : _acceptEncodingList) s = s.trimmed();
-        }
-        else if (line.startsWith("Accept-Language:", Qt::CaseInsensitive))
-        {
-            QString acceptLang = line.mid(15).trimmed();
-            _acceptLanguageList = acceptLang.split(",", Qt::SkipEmptyParts);
-            for (auto& s : _acceptLanguageList) s = s.trimmed();
-        }
-        // Можно добавить обработку других заголовков при необходимости
+    }
+    // User-Agent
+    if (headers.contains("user-agent"))
+        _userAgentString = headers["user-agent"];
+    // Accept
+    if (headers.contains("accept")) {
+        _acceptList = headers["accept"].split(",", Qt::SkipEmptyParts);
+        for (QString& s : _acceptList) s = s.trimmed();
+    }
+    // Accept-Encoding
+    if (headers.contains("accept-encoding")) {
+        _acceptEncodingList = headers["accept-encoding"].split(",", Qt::SkipEmptyParts);
+        for (QString& s : _acceptEncodingList) s = s.trimmed();
+    }
+    // Accept-Language
+    if (headers.contains("accept-language")) {
+        _acceptLanguageList = headers["accept-language"].split(",", Qt::SkipEmptyParts);
+        for (QString& s : _acceptLanguageList) s = s.trimmed();
     }
     return true;
 }
 
-bool HTTPPacket::parse(const QString& message)
+bool HTTPPacket::Parse(QString message)
 {
-    setMessage(message);
-    return parse();
+    SetMessage(message);
+    return Parse();
 }
 
-const QHash<QString, QString>& HTTPPacket::requestParameters() const
-{
-    return _requestParameters;
-}
-
-const QString& HTTPPacket::requestStringPath() const
-{
-    return _requestStringPath;
-}
-
-const QString& HTTPPacket::requestString() const
-{
-    return _requestString;
-}
-
-quint16 HTTPPacket::hostPort() const
-{
-    return _hostPort;
-}
-
-bool HTTPPacket::parseRequestLine(QString requestLine)
+bool HTTPPacket::parseRequestLine(const QString& requestLine)
 {
     if (requestLine.isEmpty())
         return false;
-    // разделитель ? - признак параметров
+
     QStringList requestLineList;
     if (!split(requestLine, requestLineList, "?"))
         return false;
 
     _requestStringPath = requestLineList.at(0);
-
     if (requestLineList.count() > 1)
     {
-        //  разделитель параметров - &
         QStringList paramsList;
         if (!split(requestLineList.at(1), paramsList, "&"))
             return false;
@@ -203,31 +199,25 @@ bool HTTPPacket::parseRequestLine(QString requestLine)
         {
             if (!split(param, paramsAndValuesList, "=", 2))
                 return false;
-
+                
             _requestParameters.insert(paramsAndValuesList.at(0), paramsAndValuesList.at(1));
-
             paramsAndValuesList.clear();
         }
     }
     return true;
 }
 
-bool HTTPPacket::split(QString string, QStringList& splittedStringList, const QString& splitter, const uint countCheck)
+bool HTTPPacket::split(QString string, QStringList& splittedStringList, QString splitter, uint countCheck)
 {
     if (splitter.isEmpty())
         return false;
 
     if (string.contains(splitter))
-    {
         splittedStringList = string.split(splitter);
-    }
     else
-    {
         splittedStringList.append(string);
-    }
-
-    if (countCheck > 0 && splittedStringList.count() < countCheck)
+        
+    if (countCheck > 0 && splittedStringList.count() < (int)countCheck)
         return false;
     return true;
-
 }

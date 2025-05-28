@@ -6,7 +6,7 @@ ApplicationLayer::ApplicationLayer(QObject *parent)
     _transportLayer = QSharedPointer<TransportLayer>::create();
 }
 
-bool ApplicationLayer::init()
+bool ApplicationLayer::Init()
 {
     connect(_transportLayer.get(), SIGNAL(signalNewMessageReceived(QString)), this, SLOT(onNewMessage(QString)));
 
@@ -20,7 +20,7 @@ void ApplicationLayer::onNewMessage(QString msg)
         return;
 
     HTTPPacket httpPacket(msg);
-    if(httpPacket.parse())
+    if(httpPacket.Parse())
         emit signalNewRequest(httpPacket);
     else
         qInfo() << "parse message unsuccesfull";

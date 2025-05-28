@@ -11,93 +11,129 @@ public:
     //! \brief Enum для определения метода HTTP запроса
     enum class  METHOD
     {
-        GET,
-        POST
+        GET,  //!< HTTP GET запрос
+        POST  //!< HTTP POST запрос
     };
 
-    HTTPPacket(QString message = "");
+    //! \brief Конструктор класса HTTPPacket
+    //! \param message Исходное сообщение HTTP (по умолчанию пустое)
+    HTTPPacket(const QString& message = "");
+
+    //! \brief Конструктор копирования
+    //! \param old Существующий объект HTTPPacket
     HTTPPacket(const HTTPPacket& old);
 
-    const QString &message() const;
+    //! \brief Возвращает исходное HTTP-сообщение
+    //! \return Строка исходного сообщения
+    QString Message() const;
 
-    void setMessage(const QString &newMessage);
+    //! \brief Устанавливает новое HTTP-сообщение
+    //! \param newMessage Новое сообщение
+    void SetMessage(const QString& newMessage);
 
-    METHOD method() const;
+    //! \brief Возвращает метод HTTP-запроса (GET/POST)
+    //! \return Значение enum METHOD
+    METHOD Method() const;
 
-    const QString &versionHttp() const;
+    //! \brief Возвращает версию HTTP
+    //! \return Строка с версией HTTP
+    QString VersionHttp() const;
 
-    const QString &userAgentString() const;
+    //! \brief Возвращает строку User-Agent
+    //! \return Строка User-Agent
+    QString UserAgentString() const;
 
-    const QHostAddress &hostAddress() const;
+    //! \brief Возвращает адрес хоста
+    //! \return QHostAddress хоста
+    QHostAddress HostAddress() const;
 
-    const QStringList &acceptLanguageList() const;
+    //! \brief Возвращает список поддерживаемых языков (Accept-Language)
+    //! \return QStringList языков
+    QStringList AcceptLanguageList() const;
 
-    const QStringList &acceptEncodingList() const;
+    //! \brief Возвращает список поддерживаемых кодировок (Accept-Encoding)
+    //! \return QStringList кодировок
+    QStringList AcceptEncodingList() const;
 
-    const QStringList &acceptList() const;
+    //! \brief Возвращает список поддерживаемых типов данных (Accept)
+    //! \return QStringList типов
+    QStringList AcceptList() const;
 
-    quint16 hostPort() const;
+    //! \brief Возвращает порт хоста
+    //! \return Порт (quint16)
+    quint16 HostPort() const;
 
-
-    //! \brief Возвращает строку запроса
-    const QString &requestString() const;
+    //! \brief Возвращает строку запроса (Request-Line)
+    //! \return Строка запроса
+    QString RequestString() const;
 
     //! \brief Возвращает путь из строки запроса
-    const QString &requestStringPath() const;
+    //! \return Строка пути
+    QString RequestStringPath() const;
 
     //! \brief Возвращает параметры запроса в виде хеш-таблицы
-    const QHash<QString, QString> &requestParameters() const;
+    //! \return QHash параметров
+    QHash<QString, QString> RequestParameters() const;
 
 public slots:
-    //! \brief Функция разбора сообщения, использующая внутреннее состояние
-    bool parse();
+    //! \brief Разбирает текущее сообщение, используя внутреннее состояние
+    //! \return true, если разбор успешен
+    bool Parse();
 
-    //! \brief Функция разбора сообщения из параметра
-    bool parse(const QString& message);
+    //! \brief Разбирает сообщение, переданное в параметре
+    //! \param message HTTP-сообщение для разбора
+    //! \return true, если разбор успешен
+    bool Parse(QString message);
 
 private:
     //! \brief Неразобранный запрос (как есть)
     QString _message;
 
-    //! \brief Тип запроса
+    //! \brief Тип запроса (GET/POST)
     METHOD _method{METHOD::GET};
 
     //! \brief Номер версии HTTP
     QString _versionHttp;
 
-    //! \brief Строка запроса
+    //! \brief Строка запроса (Request-Line)
     QString _requestString;
+    
+    //! \brief Путь из строки запроса
     QString _requestStringPath;
-    QHash<QString/*parameter*/,QString/*value*/> _requestParameters;
 
-    //! \brief Параметр HOST:
+    //! \brief Параметры запроса
+    QHash<QString/*parameter*/, QString/*value*/> _requestParameters;
+
     //! \brief Хост, к которому идёт обращение
     QHostAddress _hostAddress;
 
-    //! \brief порт, по которому идёт обращение
+    //! \brief Порт, по которому идёт обращение
     quint16 _hostPort {0};
 
-    //! \brief Параметр User-Agent:
-    //! \brief характеристики клиента, с которого осуществляется выход, например название и версия браузера
+    //! \brief Строка User-Agent
     QString _userAgentString;
 
-    //! \brief Параметр Accept:
-    //! \brief определяет, какие типы данных может обработать клиент
+    //! \brief Список поддерживаемых типов данных (Accept)
     QStringList _acceptList;
 
-    //! \brief Параметр Accept-Encoding:
-    //! \brief обозначает форматы и кодировку файлов
+    //! \brief Список поддерживаемых кодировок (Accept-Encoding)
     QStringList _acceptEncodingList;
 
-    //! \brief Параметр Accept-Language:
-    //! \brief указывает на принимаемые языки
+    //! \brief Список поддерживаемых языков (Accept-Language)
     QStringList _acceptLanguageList;
 
     //! \brief Функция разбора строки запроса в теле http заголовка
-    bool parseRequestLine(QString requestLine);
+    //! \param requestLine Строка запроса
+    //! \return true, если разбор успешен
+    bool parseRequestLine(const QString& requestLine);
 
-    //! \brief Функция разделитель по строке с проверкой
-    bool split(QString string, QStringList& splittedStringList, const QString& splitter, const uint countCheck = 0);
+    //! \brief Функция-разделитель по строке с проверкой
+    //! \param string Исходная строка
+    //! \param splittedStringList Список для результата
+    //! \param splitter Разделитель
+    //! \param countCheck Ожидаемое количество частей (0 — не проверять)
+    //! \return true, если разделение успешно
+    bool split(QString string, QStringList& splittedStringList, QString splitter, uint countCheck = 0);
 
 };
 

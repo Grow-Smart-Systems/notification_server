@@ -12,27 +12,34 @@ class Settings final
 public:
     ///@brief Получить экземпляр класса
     ///@return Указатель на экземпляр класса
-    static Settings* getInstance()
+    static Settings* GetInstance()
     {
         static Settings instance;
         return &instance;
     }
 
     ///@brief Ручная синхронизация настроек
-    void sync();
-
-    /// @brief Получить директорию конфигурации
-    /// @return Директория конфигурации
-    QDir getConfigDir() const;
+    void Sync();
 
     /// @brief Получить порт для прослушивания
     /// @return Порт для прослушивания
     /// @details По умолчанию 8080
-    quint16 getListenPort() const;
+    quint16 GetListenPort() const;
 
 private:
     ///@brief Конструктор по умолчанию
-    Settings() = default;
+    Settings()
+    {
+        // Инициализация настроек с файлом конфигурации по умолчанию
+        _settings = QSharedPointer<QSettings>::create(QDir::homePath() + "/.config/notification_server.conf", QSettings::IniFormat);
+        
+        // Убедимся, что файл настроек существует
+        if(!_settings->fileName().isEmpty())
+        {
+            _settings->beginGroup("ethernet");
+            _settings->endGroup();
+        }
+    }
 
     ///@brief Деструктор по умолчанию
     ~Settings() = default;

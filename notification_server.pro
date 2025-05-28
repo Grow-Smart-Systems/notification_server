@@ -11,8 +11,10 @@ QT += core network
 
 # Set build directory based on the build type
 CONFIG(debug, debug|release) {
+    message(debug buid)
     BUILD_PATH = build/debug/
 } else {
+    message(release buid)
     BUILD_PATH = build/release/
 }
 
@@ -28,10 +30,18 @@ RCC_DIR = $$BUILD_PATH/rcc
 HEADERS += src/ethernet/ApplicationLayer.h \
            src/ethernet/HTTPPacket.h \
            src/ethernet/TransportLayer.h \
-           src/settings/Settings.h
+           src/settings/Settings.h \
+           src/logic/MainController.h \
+           src/logic/RequestRouter.h
 
 SOURCES += src/main.cpp \
            src/ethernet/ApplicationLayer.cpp \
            src/ethernet/HTTPPacket.cpp \
            src/ethernet/TransportLayer.cpp \
-           src/settings/Settings.cpp
+           src/settings/Settings.cpp \
+           src/logic/MainController.cpp \
+           src/logic/RequestRouter.cpp
+
+INCLUDEPATH += src/ethernet \
+               src/logic \
+               src/settings
