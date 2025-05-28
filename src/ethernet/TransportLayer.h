@@ -1,49 +1,57 @@
 #ifndef TRANSPORTLAYER_H
 #define TRANSPORTLAYER_H
 
-#include <QObject>
-#include <QTcpSocket>
-#include <QTcpServer>
-#include <QDataStream>
-#include <QDateTime>
+#include "Defines.h"
 
 
-class TransportLayer final : public QObject
+namespace Ethernet
 {
-    Q_OBJECT
+    class TransportLayer final : public QObject
+    {
+        Q_OBJECT
+        
+    public:
+        //! \brief Конструктор класса транспортного уровеня
+        explicit TransportLayer(QObject* parent = nullptr);
 
-    using TCPSocketPtr = QTcpSocket*;
-    using ListTCPSocketPtr = QHash<QHostAddress, TCPSocketPtr>;
-    using QTcpServerPtr = QSharedPointer<QTcpServer>;
+        //! \brief Деструктор класса транспортного уровня
+        ~TransportLayer();
 
-public:
-    //! \brief Конструктор класса транспортного уровеня
-    explicit TransportLayer(QObject *parent = nullptr);
+        //! \brief Инициализация класса транспортного уровня
+        bool init();
 
-    ~TransportLayer();
+        //! \brief Слот на отправку ответа клиенту
+        void SendResponse(const TCPSocketKey& key, const QString& response);
 
-    //! \brief Инициализация класса транспортного уровня
-    bool init();
+    protected slots:
+        //! \brief На новое подключение
+        void onNewConnection();
 
-protected slots:
-    //! \brief На новое подключение
-    void onNewConnection();
+        //! \brief Слот на получение сообщения
+        void onServerReadyRead();
 
-    //! \brief Слот на получение сообщения
-    void onServerReadyRead();
+        //! \brief Слот на отключение сокета
+        void onDisconnection();
 
-    //! \brief Слот на отключение сокета
-    void onDisconnection();
+    private:
+        //! \brief Указатель на сервер
+        TcpServerPtr _server;
 
-private:
-    //! \brief Указатель на сервер
-    QSharedPointer<QTcpServer> _server;
+        //! \brief Хэш сокетов для обработки входящих сообщений.
+        //! \remarks Ключ - пара <адрес клиента, порт>, значение - указатель на QTcpSocket.
+        TCPSocketHash _socketHash;
 
-    //! \brief Лист сокетов для обработки входящих сообщений
-    ListTCPSocketPtr _socketList;
-signals:
-    //! \brief Сигнал получения сообщения
-    void signalNewMessageReceived(QString);
+        const QString _responseTemplate {
+            "HTTP/1.1 200 Ok\r\n"
+            "Content-Type: text/html; charset=\"utf-8\"\r\n"
+            "\r\n"
+            "%1\n"
+        };
+
+    signals:
+        //! \brief Сигнал получения сообщения
+        void signalNewMessageReceived(const TCPSocketKey&, const QString&);
+    };
 };
 
 #endif // TRANSPORTLAYER_H

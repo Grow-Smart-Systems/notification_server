@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     qDebug() << "Notification server started.";
-    auto settings = Settings::GetInstance();
 
     // Создание главного управляющего класса
     MainController mainController;

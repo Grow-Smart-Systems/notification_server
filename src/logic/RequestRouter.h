@@ -10,7 +10,7 @@
  * @brief Класс RequestRouter отвечает за маршрутизацию и обработку HTTP-запросов,
  * поступающих с прикладного уровня (ApplicationLayer).
  */
-class RequestRouter : public QObject
+class RequestRouter final : public QObject
 {
     Q_OBJECT
 public:
@@ -25,13 +25,13 @@ public slots:
      * @brief Слот для обработки новых HTTP-запросов от ApplicationLayer
      * @param packet Объект HTTPPacket с разобранным HTTP-запросом
      */
-    void OnNewRequest(const HTTPPacket &packet);
+    void OnNewRequest(const Ethernet::HTTPPacket &packet);
 
 private:
     /**
      * @brief Указатель на прикладной уровень (ApplicationLayer)
      */
-    QSharedPointer<ApplicationLayer> _applicationLayer {nullptr};
+    QSharedPointer<Ethernet::ApplicationLayer> _applicationLayer {nullptr};
 
 signals:
     /**

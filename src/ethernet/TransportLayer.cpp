@@ -1,94 +1,108 @@
 #include "TransportLayer.h"
 #include "../settings/Settings.h"
 
-TransportLayer::TransportLayer(QObject *parent)
-    : QObject{parent}
+namespace Ethernet
 {
-    _server = QSharedPointer<QTcpServer>::create();
-}
-
-TransportLayer::~TransportLayer()
-{
-    for(auto iter =_socketList.begin();iter != _socketList.end(); ++iter )
+    TransportLayer::TransportLayer(QObject* parent)
+        : QObject{ parent }
     {
-        iter.value()->deleteLater();
-    }
-    _socketList.clear();
-}
-
-bool TransportLayer::init()
-{
-    Settings* settings = Settings::GetInstance();
-    if(_server->listen(QHostAddress::Any, settings->GetListenPort()))
-    {
-        qInfo() << "(!) Server listen - address: " << _server->serverAddress().toString() << " port: " << _server->serverPort();
-        connect(_server.get(), SIGNAL(newConnection()), this, SLOT(onNewConnection()));
-    }
-    else
-    {
-        qCritical()<< "Cannot start server: " << _server->errorString();
-        return false;
+        _server = QSharedPointer<QTcpServer>::create();
     }
 
-    return true;
-}
-
-void TransportLayer::onNewConnection()
-{
-    if(_server->hasPendingConnections())
+    TransportLayer::~TransportLayer()
     {
-        TCPSocketPtr newSocket(_server->nextPendingConnection());
-
-        if(!_socketList.contains(newSocket->peerAddress()))
+        for (auto iter = _socketHash.begin();iter != _socketHash.end(); ++iter)
         {
-            qInfo() << "(+) Connect from address: " << newSocket->peerAddress().toString();
-
-            connect(newSocket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
-            connect(newSocket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
-
-            _socketList.insert(newSocket->peerAddress(), newSocket);
+            iter.value()->deleteLater();
         }
+        _socketHash.clear();
     }
-}
 
-void TransportLayer::onServerReadyRead()
-{
-    if(QObject::sender() == nullptr)
-        return;
-
-    const auto sender = qobject_cast<QTcpSocket*>(QObject::sender());
-    if(!sender)
-        return;
-
-    QString text;
-    while(sender->bytesAvailable() > 0)
+    bool TransportLayer::init()
     {
-         text += QString::fromUtf8(sender->readAll());
+        Settings* settings = Settings::GetInstance();
+        if (_server->listen(QHostAddress::Any, settings->GetListenPort()))
+        {
+            qInfo() << "(!) Server listen - address: " << _server->serverAddress().toString() << " port: " << _server->serverPort();
+            connect(_server.get(), SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+        }
+        else
+        {
+            qCritical() << "Cannot start server: " << _server->errorString();
+            return false;
+        }
+
+        return true;
     }
 
-    QTextStream os(sender);
-    os.setAutoDetectUnicode(true);
-    os << "HTTP/1.1 200 Ok\r\n"
-          "Content-Type: text/html; charset=\"utf-8\"\r\n"
-          "\r\n"
-          "<h1>Nothing to see here</h1>\n"
-       << QDateTime::currentDateTime().toString();
+    void TransportLayer::SendResponse(const TCPSocketKey& key, const QString& response)
+    {
+        auto* socket = _socketHash.value(key);
+        if (!socket)
+            return;
+        
+        QTextStream os(socket);
+        os.setAutoDetectUnicode(true);
+        os << _responseTemplate.arg(response);
+        os.flush();
 
-    sender->close();
+        socket->close();
+    }
 
-    emit signalNewMessageReceived(text);
-}
+    void TransportLayer::onNewConnection()
+    {
+        if (!_server->hasPendingConnections())
+            return;
 
-void TransportLayer::onDisconnection()
-{
-     auto address = ((QTcpSocket*)QObject::sender())->peerAddress();
-     auto socket = _socketList.value(address);
+        TCPSocketPtr newSocket(_server->nextPendingConnection());
+        TCPSocketKey keyConnection{ newSocket->peerAddress(), newSocket->peerPort() };
+        if (_socketHash.contains(keyConnection))
+            return;
 
-     disconnect(socket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
-     disconnect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
+        qInfo() << "(+) Connect from address: " << newSocket->peerAddress().toString();
 
-     qInfo() << "(-) Disconnection from address: " << socket->peerAddress().toString();
+        connect(newSocket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
+        connect(newSocket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
 
-     _socketList.value(address)->deleteLater();
-     _socketList.remove(address);
-}
+        _socketHash.insert(keyConnection, newSocket);
+    }
+
+    void TransportLayer::onServerReadyRead()
+    {
+        if (QObject::sender() == nullptr)
+            return;
+
+        const auto sender = qobject_cast<QTcpSocket*>(QObject::sender());
+        if (!sender)
+            return;
+
+        QString text;
+        while (sender->bytesAvailable() > 0)
+        {
+            text += QString::fromUtf8(sender->readAll());
+        }
+
+        TCPSocketKey keyConnection{ sender->peerAddress(), sender->peerPort() };
+        emit signalNewMessageReceived(keyConnection, text);
+    }
+
+    void TransportLayer::onDisconnection()
+    {
+        auto address = ((QTcpSocket*)QObject::sender())->peerAddress();
+        auto* sender = qobject_cast<QTcpSocket*>(QObject::sender());
+        if (!sender)
+            return;
+
+        TCPSocketKey keyConnection{ sender->peerAddress(), sender->peerPort() };
+
+        auto socket = _socketHash.value(keyConnection);
+
+        disconnect(socket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
+        disconnect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
+
+        qInfo() << "(-) Disconnection from address: " << socket->peerAddress().toString();
+
+        _socketHash.value(keyConnection)->deleteLater();
+        _socketHash.remove(keyConnection);
+    }
+};

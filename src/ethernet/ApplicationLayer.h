@@ -1,58 +1,69 @@
 #ifndef APPLICATIONLAYER_H
 #define APPLICATIONLAYER_H
 
-#include <QObject>
-#include <QRegularExpression>
-
 #include "TransportLayer.h"
 #include "HTTPPacket.h"
 
 
-class ApplicationLayer final : public QObject
+namespace Ethernet
 {
-    Q_OBJECT
-public:
-    //! \brief Конструктор класса прикладного уровня получения
-    explicit ApplicationLayer(QObject *parent = nullptr);
+    class ApplicationLayer final : public QObject
+    {
+        Q_OBJECT
 
-    /*!
-     * \brief Инициализирует экземпляр ApplicationLayer.
-     * 
-     * Этот метод отвечает за настройку ApplicationLayer, включая инициализацию
-     * транспортного уровня и настройку необходимых соединений. Его следует вызывать
-     * после создания объекта и до его использования.
-     * 
-     * \return Возвращает true, если инициализация прошла успешно, иначе false.
-     */
-    bool Init();
+        //! \brief Максимальное время ожидания ответа
+        static constexpr int MAX_WAITING_TIME = 5000;
 
-protected slots:
+    public:
+        //! \brief Конструктор класса прикладного уровня получения
+        explicit ApplicationLayer(QObject* parent = nullptr);
 
-    /*!
-     * \brief Обрабатывает получение нового сообщения от транспортного уровня.
-     * 
-     * Этот слот подключается к сигналу от транспортного уровня, который испускается
-     * каждый раз при получении нового сообщения. Он отвечает за дальнейшую обработку
-     * сообщения, такую как извлечение HTTP-запросов.
-     * 
-     * \param msg Сообщение, полученное от транспортного уровня, в виде QString.
-     */
-    void onNewMessage(QString msg);
+        /*!
+         * \brief Инициализирует экземпляр ApplicationLayer.
+         * \return Возвращает true, если инициализация прошла успешно, иначе false.
+         */
+        bool Init();
 
-private:
-    //! \brief Указатель на транспортный уровень
-    QSharedPointer<TransportLayer> _transportLayer;
+        /*!
+         * \brief Отправляет ответ клиенту по транспортному уровню.
+         * \param key Ключ сокета, по которому будет отправлен ответ.
+         * \param response Ответ в виде строки, который будет отправлен клиенту.
+         */
+        void SendResponse(const TCPSocketKey& key, const QString& response);
 
-    //! \brief Объект выделения GET пакетов
-    QRegularExpression _re;
+    protected slots:
 
-    //! \brief Функция выделение запроса из всего сообщения
-    QString getRequestFromMessage(QString message);
+        /*!
+         * \brief Обрабатывает получение нового сообщения от транспортного уровня.
+         * \param msg Сообщение, полученное от транспортного уровня, в виде QString.
+         */
+        void OnNewMessage(const TCPSocketKey& key, const QString& msg);
 
-signals:
-    //! \brief Сигнал на получения запроса
-    void signalNewRequest(const HTTPPacket&);
+        /*!
+         * \brief Обрабатывает событие таймера для управления ожиданием ответов.
+         * \param event Событие таймера, которое содержит идентификатор таймера.
+         */
+        void timerEvent(QTimerEvent* event) override;
+        
 
+    private:
+        //! \brief Указатель на транспортный уровень
+        QSharedPointer<TransportLayer> _transportLayer;
+
+        //! \brief Функция выделение запроса из всего сообщения
+        QString getRequestFromMessage(QString message);
+
+        //! \brief Набор идентификаторов запросов, которые ожидают ответа
+        QMap<int, TCPSocketKey> _waitingRequests;
+
+    signals:
+        /*!
+         * \brief Сигнал, который отправляется при получении нового HTTP-запроса.
+         * \param packet Объект HTTPPacket, содержащий разобранный HTTP-запрос.
+         */
+        void signalNewRequest(const HTTPPacket&);
+
+    };
 };
 
 #endif // APPLICATIONLAYER_H

@@ -44,4 +44,6 @@ SOURCES += src/main.cpp \
 
 INCLUDEPATH += src/ethernet \
                src/logic \
-               src/settings
+               src/settings \
+               src/common \
+               src/encryptor

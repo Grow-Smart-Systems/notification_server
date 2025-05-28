@@ -7,7 +7,7 @@
 /**
  * @brief Главный управляющий класс приложения.
  */
-class MainController : public QObject
+class MainController final : public QObject
 {
     Q_OBJECT
     
