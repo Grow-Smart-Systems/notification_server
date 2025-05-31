@@ -1,7 +1,11 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <memory>
+
 #include <QObject>
+#include <QString>
+#include <QVariant>
 #include <QSharedPointer>
 #include <QTcpSocket>
 #include <QTcpServer>

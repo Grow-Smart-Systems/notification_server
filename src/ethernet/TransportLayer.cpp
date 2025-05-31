@@ -43,7 +43,7 @@ namespace Ethernet
         
         QTextStream os(socket);
         os.setAutoDetectUnicode(true);
-        os << _responseTemplate.arg(response);
+        os << response;
         os.flush();
 
         socket->close();

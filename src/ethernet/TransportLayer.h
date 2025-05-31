@@ -41,13 +41,6 @@ namespace Ethernet
         //! \remarks Ключ - пара <адрес клиента, порт>, значение - указатель на QTcpSocket.
         TCPSocketHash _socketHash;
 
-        const QString _responseTemplate {
-            "HTTP/1.1 200 Ok\r\n"
-            "Content-Type: text/html; charset=\"utf-8\"\r\n"
-            "\r\n"
-            "%1\n"
-        };
-
     signals:
         //! \brief Сигнал получения сообщения
         void signalNewMessageReceived(const TCPSocketKey&, const QString&);
