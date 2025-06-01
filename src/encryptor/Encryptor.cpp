@@ -2,18 +2,20 @@
 
 namespace Crypto
 {
-    QByteArray Encryptor::Encrypt(const QByteArray& data, const QByteArray& key)
+    QString Encryptor::Encrypt(const QString& data)
     {
         return data; // Заглушка, замените на реальную реализацию
     }
 
-    QByteArray Encryptor::Decrypt(const QByteArray& data, const QByteArray& key)
+    QString Encryptor::Decrypt(const QString& data)
     {
         return data; // Заглушка, замените на реальную реализацию
     }
 
-    QByteArray Encryptor::GenerateIV()
+    QString Encryptor::GenerateIV()
     {
-        return QByteArray(); // Заглушка, замените на реальную реализацию
+        // Генерация вектора инициализации (IV) для шифрования
+        // Здесь должна быть ваша логика генерации IV
+        return QString(); // Заглушка, замените на реальную реализацию
     }
 }; // namespace Crypto

@@ -12,7 +12,7 @@ namespace Ethernet
         Q_OBJECT
 
         //! \brief Максимальное время ожидания ответа
-        static constexpr int MAX_WAITING_TIME = 5000;
+        static constexpr int MAX_WAITING_TIME = 10000;
 
     public:
         //! @brief Конструктор класса прикладного уровня получения
@@ -28,7 +28,6 @@ namespace Ethernet
         void SendResponse(const TCPSocketKey& key, const QString& response);
 
     protected slots:
-
         //! @brief Обрабатывает получение нового сообщения от транспортного уровня.
         //! @param key Ключ сокета
         //! @param msg Сообщение, полученное от транспортного уровня, в виде QString.
@@ -37,7 +36,6 @@ namespace Ethernet
         //! @brief Обрабатывает событие таймера для управления ожиданием ответов.
         //! @param event Событие таймера, которое содержит идентификатор таймера.
         void timerEvent(QTimerEvent* event) override;
-        
 
     private:
         //! @brief Указатель на транспортный уровень
@@ -53,7 +51,6 @@ namespace Ethernet
         //! @brief Сигнал, который отправляется при получении нового HTTP-запроса.
         //! @param packet Объект HTTPPacket, содержащий разобранный HTTP-запрос.
         void signalNewRequest(const TCPSocketKey&, const HTTPPacket&);
-
     };
 };
 

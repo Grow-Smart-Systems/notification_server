@@ -16,14 +16,14 @@ namespace Crypto
         ~Encryptor() = default;
 
         //! @brief Шифрует данные с использованием симметричного шифрования
-        static QByteArray Encrypt(const QByteArray& data, const QByteArray& key);
+        static QString Encrypt(const QString& data);
 
         //! @brief Дешифрует данные с использованием симметричного шифрования
-        static QByteArray Decrypt(const QByteArray& data, const QByteArray& key);
+        static QString Decrypt(const QString& data);
 
     private:
         //! @brief Генерирует вектор инициализации (IV) для шифрования
-        static QByteArray GenerateIV();
+        static QString GenerateIV();
     };
 };
 #endif // ENCRYPTOR_H

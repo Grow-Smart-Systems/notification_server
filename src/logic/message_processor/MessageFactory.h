@@ -6,11 +6,11 @@
 
 namespace Logic::MessageFactory
 {
-    //! @brief Фабрика для парсинга и создания объектов сообщений
+    //! @brief Фабрика для парсинга сообщений
     class MessageFactory
     {
     public:
-        //! @brief Парсит строку и создает объект BaseMessage
+        //! @brief Парсит пакет и создает объект BaseMessage
         //! @param key Ключ для ответного сообщения
         //! @param packet HTTP пакет для обработки данных
         static std::unique_ptr<BaseMessage> parseMessage(

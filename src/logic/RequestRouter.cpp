@@ -18,7 +18,6 @@ namespace Logic
 
     void RequestRouter::OnNewRequest(const Ethernet::TCPSocketKey& key, const Ethernet::HTTPPacket& packet)
     {
-        // Использование фабрики для создания сообщения
         auto message = Logic::MessageFactory::MessageFactory::parseMessage(key, packet);
         if (!message) 
             return;

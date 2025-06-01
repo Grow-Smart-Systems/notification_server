@@ -28,11 +28,6 @@ namespace Logic
     private:
         //! @brief Указатель на прикладной уровень (ApplicationLayer)
         QSharedPointer<Ethernet::ApplicationLayer> _applicationLayer {nullptr};
-
-    signals:
-        //! @brief Сигнал для передачи ответа (можно расширить позже)
-        //! @param response Строка с ответом
-        void responseReady(const QString &response);
     };
 }; // namespace Logic
 
@@ -41,7 +36,7 @@ namespace Logic
 
 /*TODO: организовать обмен ключами по следующей схеме
 
-Пример процесса (для симметричного шифрования илм CBC (Cipher Block Chaining)): 
+Пример процесса (для симметричного шифрования или CBC (Cipher Block Chaining)): 
 Устройство и сервер изначально имеют общий ключ K1.
 Сервер генерирует новый ключ K2.
 Сервер шифрует K2 с помощью K1 (AES-CBC) и добавляет HMAC(K1, K2).
