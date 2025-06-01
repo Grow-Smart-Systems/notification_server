@@ -54,6 +54,6 @@ namespace Ethernet
 
         _waitingRequests.insert(startTimer(MAX_WAITING_TIME), key);
 
-        emit signalNewRequest(httpPacket);
+        emit signalNewRequest(key, httpPacket);
     }
 };

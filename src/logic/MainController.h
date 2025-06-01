@@ -4,27 +4,22 @@
 #include <QObject>
 #include "RequestRouter.h"
 
-/**
- * @brief Главный управляющий класс приложения.
- */
+//! @brief Главный управляющий класс приложения.
 class MainController final : public QObject
 {
     Q_OBJECT
     
 public:
-    /**
-     * @brief Конструктор MainController
-     * @param parent Родительский QObject
-     */
+    //! @brief Конструктор MainController
+    //! @param parent Родительский QObject
     MainController(QObject *parent = nullptr);
 
+    //! @brief Деструктор MainController
     ~MainController() = default;
 
 private:
-    /**
-     * @brief Роутер HTTP-запросов
-     */
-    QSharedPointer<RequestRouter> _requestRouter;
+    //! @brief Роутер HTTP-запросов
+    QSharedPointer<Logic::RequestRouter> _requestRouter;
 };
 
 #endif // MAINCONTROLLER_H

@@ -20,9 +20,13 @@
 
 namespace Ethernet
 {
+    //! @brief Указатель на QTcpSocket
     using TCPSocketPtr = QTcpSocket*;
+    //! @brief Ключ сокета: пара <адрес, порт>
     using TCPSocketKey = QPair<QHostAddress, qint16>;
+    //! @brief Хэш сокетов
     using TCPSocketHash = QHash<TCPSocketKey, TCPSocketPtr>;
+    //! @brief Указатель на QTcpServer
     using TcpServerPtr = QSharedPointer<QTcpServer>;
 }
 

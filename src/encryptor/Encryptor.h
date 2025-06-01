@@ -9,20 +9,20 @@ namespace Crypto
     {
         Q_OBJECT
     public:
-        //! \brief Конструктор класса Encryptor
+        //! @brief Конструктор класса Encryptor
         Encryptor() = default;
 
-        //! \brief Деструктор класса Encryptor
+        //! @brief Деструктор класса Encryptor
         ~Encryptor() = default;
 
-        //! \brief Шифрует данные с использованием симметричного шифрования
+        //! @brief Шифрует данные с использованием симметричного шифрования
         static QByteArray Encrypt(const QByteArray& data, const QByteArray& key);
 
-        //! \brief Дешифрует данные с использованием симметричного шифрования
+        //! @brief Дешифрует данные с использованием симметричного шифрования
         static QByteArray Decrypt(const QByteArray& data, const QByteArray& key);
 
     private:
-        //! \brief Генерирует вектор инициализации (IV) для шифрования
+        //! @brief Генерирует вектор инициализации (IV) для шифрования
         static QByteArray GenerateIV();
     };
 };

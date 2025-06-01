@@ -6,40 +6,35 @@
 #include "HTTPPacket.h"
 #include "ApplicationLayer.h"
 
-/**
- * @brief Класс RequestRouter отвечает за маршрутизацию и обработку HTTP-запросов,
- * поступающих с прикладного уровня (ApplicationLayer).
- */
-class RequestRouter final : public QObject
+
+namespace Logic
 {
-    Q_OBJECT
-public:
-    /**
-     * @brief Конструктор класса RequestRouter
-     * @param parent Родительский QObject
-     */
-    explicit RequestRouter(QObject *parent = nullptr);
+    //! @brief Класс RequestRouter отвечает за маршрутизацию и обработку HTTP-запросов,
+    //! поступающих с прикладного уровня (ApplicationLayer).
+    class RequestRouter final : public QObject
+    {
+        Q_OBJECT
+    public:
+        //! @brief Конструктор класса RequestRouter
+        //! @param parent Родительский QObject
+        explicit RequestRouter(QObject* parent = nullptr);
 
-public slots:
-    /**
-     * @brief Слот для обработки новых HTTP-запросов от ApplicationLayer
-     * @param packet Объект HTTPPacket с разобранным HTTP-запросом
-     */
-    void OnNewRequest(const Ethernet::HTTPPacket &packet);
+    public slots:
+        //! @brief Слот для обработки новых HTTP-запросов от ApplicationLayer
+        //! @param packet Объект HTTPPacket с разобранным HTTP-запросом
+        void OnNewRequest(const Ethernet::TCPSocketKey& key, 
+                          const Ethernet::HTTPPacket& packet);
 
-private:
-    /**
-     * @brief Указатель на прикладной уровень (ApplicationLayer)
-     */
-    QSharedPointer<Ethernet::ApplicationLayer> _applicationLayer {nullptr};
+    private:
+        //! @brief Указатель на прикладной уровень (ApplicationLayer)
+        QSharedPointer<Ethernet::ApplicationLayer> _applicationLayer {nullptr};
 
-signals:
-    /**
-     * @brief Сигнал для передачи ответа (можно расширить позже)
-     * @param response Строка с ответом
-     */
-    void responseReady(const QString &response);
-};
+    signals:
+        //! @brief Сигнал для передачи ответа (можно расширить позже)
+        //! @param response Строка с ответом
+        void responseReady(const QString &response);
+    };
+}; // namespace Logic
 
 #endif // REQUESTROUTER_H
 
@@ -54,4 +49,4 @@ signals:
 Устройство расшифровывает K2 с помощью K1, проверяет HMAC.
 Если проверка успешна, устройство заменяет K1 на K2.
 Устройство отправляет серверу зашифрованное подтверждение с использованием K2.
-*/ 
+*/

@@ -4,5 +4,5 @@ MainController::MainController(QObject *parent)
     : QObject(parent)
 {
     // Инициализация и связывание компонентов
-    _requestRouter = QSharedPointer<RequestRouter>::create();
+    _requestRouter = QSharedPointer<Logic::RequestRouter>::create();
 }

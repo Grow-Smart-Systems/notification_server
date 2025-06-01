@@ -32,7 +32,12 @@ HEADERS += src/ethernet/ApplicationLayer.h \
            src/ethernet/TransportLayer.h \
            src/settings/Settings.h \
            src/logic/MainController.h \
-           src/logic/RequestRouter.h
+           src/logic/RequestRouter.h \
+           src/common/Defines.h \
+           src/encryptor/Encryptor.h \
+           src/logic/message_processor/BaseMessage.h \
+           src/logic/message_processor/MessageFactory.h \
+           src/logic/message_processor/messages/MessagePing.h
 
 SOURCES += src/main.cpp \
            src/ethernet/ApplicationLayer.cpp \
@@ -40,7 +45,11 @@ SOURCES += src/main.cpp \
            src/ethernet/TransportLayer.cpp \
            src/settings/Settings.cpp \
            src/logic/MainController.cpp \
-           src/logic/RequestRouter.cpp
+           src/logic/RequestRouter.cpp \
+           src/encryptor/Encryptor.cpp \
+           src/logic/message_processor/MessageFactory.cpp \
+           src/logic/message_processor/messages/MessagePing.cpp
+
 
 INCLUDEPATH += src/ethernet \
                src/logic \

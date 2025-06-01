@@ -14,39 +14,39 @@ namespace Ethernet
         static constexpr int MAX_REQUEST_SIZE = 8192;
 
     public:
-        //! \brief Enum для определения метода HTTP запроса
+        //! @brief Enum для определения метода HTTP запроса
         enum class  METHOD
         {
-            GET,  // HTTP GET запрос
-            POST  // HTTP POST запрос
+            GET,  //!< HTTP GET запрос
+            POST  //!< HTTP POST запрос
         };
 
-        //! \brief Конструктор класса HTTPPacket
-        //! \param message Исходное сообщение HTTP (по умолчанию пустое)
+        //! @brief Конструктор класса HTTPPacket
+        //! @param message Исходное сообщение HTTP (по умолчанию пустое)
         HTTPPacket(const QString& message = "");
 
-        //! \brief Конструктор копирования
-        //! \param old Существующий объект HTTPPacket
+        //! @brief Конструктор копирования
+        //! @param old Существующий объект HTTPPacket
         HTTPPacket(const HTTPPacket& old);
 
-        //! \brief Возвращает исходное HTTP-сообщение
-        //! \return Строка исходного сообщения
+        //! @brief Возвращает исходное HTTP-сообщение
+        //! @return Строка исходного сообщения
         QString Message() const;
 
-        //! \brief Устанавливает новое HTTP-сообщение
-        //! \param newMessage Новое сообщение
+        //! @brief Устанавливает новое HTTP-сообщение
+        //! @param newMessage Новое сообщение
         void SetMessage(const QString& newMessage);
 
-        //! \brief Возвращает метод HTTP-запроса (GET/POST)
-        //! \return Значение enum METHOD
+        //! @brief Возвращает метод HTTP-запроса (GET/POST)
+        //! @return Значение enum METHOD
         METHOD Method() const;
 
-        //! \brief Возвращает версию HTTP
-        //! \return Строка с версией HTTP
+        //! @brief Возвращает версию HTTP
+        //! @return Строка с версией HTTP
         QString VersionHttp() const;
 
-        //! \brief Возвращает строку User-Agent
-        //! \return Строка User-Agent
+        //! @brief Возвращает строку User-Agent
+        //! @return Строка User-Agent
         QString UserAgentString() const;
 
         //! \brief Возвращает адрес хоста

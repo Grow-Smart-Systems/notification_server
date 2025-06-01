@@ -4,12 +4,19 @@
 #include "Defines.h"
 #include "BaseMessage.h"
 
-class MessageFactory
+namespace Logic::MessageFactory
 {
-public:
-    // Пример статического метода для разбора сообщения
-    // Можно возвращать std::unique_ptr<BaseMessage> или QVariant для универсальности
-    static std::unique_ptr<BaseMessage> parseMessage(const QString& rawMessage);
+    //! @brief Фабрика для парсинга и создания объектов сообщений
+    class MessageFactory
+    {
+    public:
+        //! @brief Парсит строку и создает объект BaseMessage
+        //! @param key Ключ для ответного сообщения
+        //! @param packet HTTP пакет для обработки данных
+        static std::unique_ptr<BaseMessage> parseMessage(
+            const Ethernet::TCPSocketKey& key, 
+            const Ethernet::HTTPPacket& packet);
+    };
 };
 
 #endif // MESSEGEFACTORY_H
