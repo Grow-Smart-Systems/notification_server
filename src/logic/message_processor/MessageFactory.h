@@ -13,8 +13,8 @@ namespace Logic::MessageFactory
         //! @brief Парсит пакет и создает объект BaseMessage
         //! @param key Ключ для ответного сообщения
         //! @param packet HTTP пакет для обработки данных
-        static std::unique_ptr<BaseMessage> parseMessage(
-            const Ethernet::TCPSocketKey& key, 
+        static std::shared_ptr<BaseMessage> parseMessage(
+            const GUID& deviceGuid, 
             const Ethernet::HTTPPacket& packet);
     };
 };

@@ -4,14 +4,14 @@
 
 namespace Logic::MessageFactory
 {
-    std::unique_ptr<BaseMessage> MessageFactory::parseMessage(const Ethernet::TCPSocketKey& key, 
+    std::shared_ptr<BaseMessage> MessageFactory::parseMessage(const GUID& deviceGuid, 
         const Ethernet::HTTPPacket& packet)
     {
         const auto path = packet.RequestStringPath().toLower();
         qDebug() << "Parsing message:" << path;
 
         if(path == "/ping")
-            return std::make_unique<MessagePing>(key, packet);
+            return std::make_shared<MessagePing>(deviceGuid, packet);
 
         return nullptr;
     }

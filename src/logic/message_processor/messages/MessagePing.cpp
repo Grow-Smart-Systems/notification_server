@@ -18,6 +18,6 @@ namespace Logic::MessageFactory
             response += "<p>delta: " + QString::number(serverTime - clientTime.toLongLong()) + "</p>\r\n";
         }
 
-        emit BaseMessage::SendResponse(_socketKey, response);
+        emit BaseMessage::SendResponse(_guid, response);
     }
 } // namespace Logic::MessageFactory

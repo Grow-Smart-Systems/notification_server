@@ -6,28 +6,43 @@
 #include <QSharedPointer>
 
 
-/// @brief Класс для работы с настройками приложения
+//! @brief Класс для работы с настройками приложения
 class Settings final
 {
 public:
-    ///@brief Получить экземпляр класса
-    ///@return Указатель на экземпляр класса
+    //! @brief Получить экземпляр класса
+    //! @return Указатель на экземпляр класса
     static Settings* GetInstance()
     {
         static Settings instance;
         return &instance;
     }
 
-    ///@brief Ручная синхронизация настроек
+    //! @brief Ручная синхронизация настроек
     void Sync();
 
-    /// @brief Получить порт для прослушивания
-    /// @return Порт для прослушивания
-    /// @details По умолчанию 8080
+    //! @brief Получить порт для прослушивания
+    //! @return Порт для прослушивания
+    //! @details По умолчанию 8080
     quint16 GetListenPort() const;
 
+    //! @brief Установить имя базы данных
+    //! @param name Имя базы данных
+    //! @details Если имя не указано, используется значение по умолчанию "notification_server.db"
+    QString GetDatabaseName() const;
+
+    //! @brief Получить время истечения ключа подключения
+    //! @return Время истечения ключа подключения в днях
+    //! @details По умолчанию 30 дней
+    int GetKeyExpirationTime() const;
+
+    //! @brief Получить значение, включена ли криптография
+    //! @return true, если криптография включена, иначе false
+    //! @details По умолчанию true
+    bool GetEnableCrypto() const;
+
 private:
-    ///@brief Конструктор по умолчанию
+    //! @brief Конструктор по умолчанию
     Settings()
     {
         // Инициализация настроек с файлом конфигурации по умолчанию
@@ -41,23 +56,23 @@ private:
         }
     }
 
-    ///@brief Деструктор по умолчанию
+    //! @brief Деструктор по умолчанию
     ~Settings() = default;
 
-    ///@brief Запрет копирования
-    ///@param other Другой объект
+    //! @brief Запрет копирования
+    //! @param other Другой объект
     Settings(const Settings& other) = delete;
 
-    ///@brief Запрет перемещения
-    ///@param other Другой объект
+    //! @brief Запрет перемещения
+    //! @param other Другой объект
     Settings(Settings&& other) = delete;
 
-    ///@brief Запрет присваивания
-    ///@param other Другой объект
+    //! @brief Запрет присваивания
+    //! @param other Другой объект
     Settings& operator=(const Settings& other) = delete;
 
-    ///@brief Указатель на настройки
-    ///@details Используется для хранения настроек приложения
+    //! @brief Указатель на настройки
+    //! @details Используется для хранения настроек приложения
     QSharedPointer<QSettings> _settings;
 };
 

@@ -6,16 +6,16 @@ namespace Ethernet
     TransportLayer::TransportLayer(QObject* parent)
         : QObject{ parent }
     {
-        _server = QSharedPointer<QTcpServer>::create();
+        _server = std::make_unique<QTcpServer>();
     }
 
     TransportLayer::~TransportLayer()
     {
-        for (auto iter = _socketHash.begin();iter != _socketHash.end(); ++iter)
+        for (auto iter = _sockets.begin(); iter != _sockets.end(); ++iter)
         {
             iter.value()->deleteLater();
         }
-        _socketHash.clear();
+        _sockets.clear();
     }
 
     bool TransportLayer::init()
@@ -35,13 +35,13 @@ namespace Ethernet
         return true;
     }
 
-    void TransportLayer::SendResponse(const TCPSocketKey& key, const QString& response)
+    void TransportLayer::SendResponse(const TcpSocketKey& key, const QString& response)
     {
-        auto* socket = _socketHash.value(key);
+        auto socket = _sockets.value(key);
         if (!socket)
             return;
         
-        QTextStream os(socket);
+        QTextStream os(socket.get());
         os.setAutoDetectUnicode(true);
         os << response;
         os.flush();
@@ -54,17 +54,15 @@ namespace Ethernet
         if (!_server->hasPendingConnections())
             return;
 
-        TCPSocketPtr newSocket(_server->nextPendingConnection());
-        TCPSocketKey keyConnection{ newSocket->peerAddress(), newSocket->peerPort() };
-        if (_socketHash.contains(keyConnection))
-            return;
+        auto newSocket = TcpSocketPtr::create(_server->nextPendingConnection());
+        auto address {CreateTcpSocketKey(newSocket)};
+        qInfo() << "(+) Connect from address: " << address;
+        
+        // Заполним хэш адреса и указателя на сокет
+        _sockets.insert(address, newSocket);
 
-        qInfo() << "(+) Connect from address: " << newSocket->peerAddress().toString();
-
-        connect(newSocket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
-        connect(newSocket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
-
-        _socketHash.insert(keyConnection, newSocket);
+        connect(newSocket.get(), SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
+        connect(newSocket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnection()));
     }
 
     void TransportLayer::onServerReadyRead()
@@ -76,33 +74,51 @@ namespace Ethernet
         if (!sender)
             return;
 
-        QString text;
+        QByteArray array;
         while (sender->bytesAvailable() > 0)
         {
-            text += QString::fromUtf8(sender->readAll());
+            array += sender->readAll();
+        }
+        if (array.isEmpty())
+            return;
+
+        auto keyConnection = CreateTcpSocketKey(sender->peerAddress(), sender->peerPort());
+        if (!_sockets.contains(keyConnection))
+        {
+            qWarning() << "Socket not found for key: " << keyConnection;
+            return;
         }
 
-        TCPSocketKey keyConnection{ sender->peerAddress(), sender->peerPort() };
-        emit signalNewMessageReceived(keyConnection, text);
+        emit signalNewMessageReceived(keyConnection, array);
     }
 
     void TransportLayer::onDisconnection()
     {
-        auto address = ((QTcpSocket*)QObject::sender())->peerAddress();
         auto* sender = qobject_cast<QTcpSocket*>(QObject::sender());
         if (!sender)
             return;
 
-        TCPSocketKey keyConnection{ sender->peerAddress(), sender->peerPort() };
+        auto keyConnection = CreateTcpSocketKey(sender->peerAddress(), 
+                                                sender->peerPort());
+        if (!_sockets.contains(keyConnection))
+        {
+            qWarning() << "Socket not found for key: " << keyConnection;
+            return;
+        }
 
-        auto socket = _socketHash.value(keyConnection);
+        auto socket = _sockets.value(keyConnection);
+        if (!socket)
+        {
+            qWarning() << "Socket pointer is null for key: " << keyConnection;
+            return;
+        }
 
-        disconnect(socket, SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
-        disconnect(socket, SIGNAL(disconnected()), this, SLOT(onDisconnection()));
+        disconnect(socket.get(), SIGNAL(readyRead()), this, SLOT(onServerReadyRead()));
+        disconnect(socket.get(), SIGNAL(disconnected()), this, SLOT(onDisconnection()));
 
         qInfo() << "(-) Disconnection from address: " << socket->peerAddress().toString();
 
-        _socketHash.value(keyConnection)->deleteLater();
-        _socketHash.remove(keyConnection);
+        socket->deleteLater();
+        _sockets.remove(keyConnection);
     }
 };

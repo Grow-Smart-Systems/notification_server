@@ -13,19 +13,23 @@ namespace Logic
             return;
         }
         connect(_applicationLayer.data(), &Ethernet::ApplicationLayer::signalNewRequest,
-            this, &RequestRouter::OnNewRequest);
+            this, &RequestRouter::OnNewRequest, Qt::QueuedConnection);
     }
 
-    void RequestRouter::OnNewRequest(const Ethernet::TCPSocketKey& key, const Ethernet::HTTPPacket& packet)
+    void RequestRouter::OnNewRequest(const GUID& deviceGuid, const Ethernet::HTTPPacket& packet)
     {
-        auto message = Logic::MessageFactory::MessageFactory::parseMessage(key, packet);
+        auto message = Logic::MessageFactory::MessageFactory::parseMessage(deviceGuid, packet);
         if (!message) 
             return;
 
         connect(message.get(), &Logic::MessageFactory::BaseMessage::SendResponse,
             _applicationLayer.data(), &Ethernet::ApplicationLayer::SendResponse);
 
-        message->HandleMassage();
+        // Запускаем обработку сообщения в отдельном потоке
+        auto future = QtConcurrent::run([message = std::move(message)]() mutable 
+        {
+            message->HandleMessage();
+        });
     }
 } // namespace Logic
 

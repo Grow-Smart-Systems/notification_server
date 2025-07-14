@@ -21,7 +21,7 @@ namespace Ethernet
         bool init();
 
         //! @brief Слот на отправку ответа клиенту
-        void SendResponse(const TCPSocketKey& key, const QString& response);
+        void SendResponse(const TcpSocketKey& address, const QString& response);
 
     protected slots:
         //! @brief На новое подключение
@@ -37,13 +37,15 @@ namespace Ethernet
         //! @brief Указатель на сервер
         TcpServerPtr _server;
 
-        //! @brief Хэш сокетов для обработки входящих сообщений.
-        //! @remarks Ключ - пара <адрес клиента, порт>, значение - указатель на QTcpSocket.
-        TCPSocketHash _socketHash;
+        //! @brief Хэш сокетов
+        //! @details Ключ - адрес:порт, значение - указатель на QTcpSocket
+        TcpSocketHash _sockets;
 
     signals:
         //! @brief Сигнал получения сообщения
-        void signalNewMessageReceived(const TCPSocketKey&, const QString&);
+        //! @param key Ключ сокета, по которому было получено сообщение
+        //! @param data Данные сообщения
+        void signalNewMessageReceived(const TcpSocketKey&, const QByteArray&);
     };
 };
 

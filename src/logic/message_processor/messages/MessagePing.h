@@ -11,8 +11,8 @@ namespace Logic::MessageFactory
     {
     public:
         //! \brief Конструктор класса MessagePing.
-        MessagePing(const Ethernet::TCPSocketKey& key, const Ethernet::HTTPPacket& packet)
-            : BaseMessage(key, packet) {}
+        MessagePing(const GUID& guid, const Ethernet::HTTPPacket& packet)
+            : BaseMessage(guid, packet) {}
 
         //! \brief Деструктор класса MessagePing.
         ~MessagePing() = default;

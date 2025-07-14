@@ -17,8 +17,8 @@ namespace Logic::MessageFactory
          *  \param key Ключ сокета, по которому пришло сообщение.
          *  \param packet Объект HTTPPacket, содержащий разобранный HTTP-запрос.
          */
-        BaseMessage(const Ethernet::TCPSocketKey& key, const Ethernet::HTTPPacket& packet)
-            : _socketKey(std::move(key))
+        BaseMessage(const GUID& guid, const Ethernet::HTTPPacket& packet)
+            : _guid(std::move(guid))
             , _packet(std::move(packet))
         {};
 
@@ -28,7 +28,7 @@ namespace Logic::MessageFactory
         /*! \brief Запускает обработку сообщения по этапам.
          *  Вызовы этапов: валидация, сохранение исходных данных, бизнес-логика, сохранение результата, формирование ответа, логирование.
          */
-        virtual void HandleMassage()
+        virtual void HandleMessage()
         {
             ValidateAndParse();
             SaveRawData();
@@ -58,14 +58,14 @@ namespace Logic::MessageFactory
         virtual void LogResult() {}
 
     protected:
-        /*! \brief Ключ сокета, по которому пришло сообщение. */
-        Ethernet::TCPSocketKey _socketKey;
+        /*! \brief Уникальный идентификатор устройства, отправившего сообщение. */
+        GUID _guid;
 
         /*! \brief HTTP-пакет, содержащий разобранный запрос. */
         Ethernet::HTTPPacket _packet;
 
     signals:
-        void SendResponse(const Ethernet::TCPSocketKey& key, const QString& response);
+        void SendResponse(const GUID& guid, const QString& response);
     };
 };
 #endif // BASEMESSAGE_H

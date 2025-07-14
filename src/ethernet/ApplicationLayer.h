@@ -23,15 +23,22 @@ namespace Ethernet
         bool Init();
 
         //! @brief Отправляет ответ клиенту по транспортному уровню.
-        //! @param key Ключ сокета, по которому будет отправлен ответ.
+        //! @param guid GUID устройства, для которого будет отправлен ответ.
         //! @param response Ответ в виде строки, который будет отправлен клиенту.
-        void SendResponse(const TCPSocketKey& key, const QString& response);
+        void SendResponse(const GUID& guid, const QString& response);
+
+    protected:
+        //! @brief Обрабатывает получение GUID из сообщения.
+        //! @param key Ключ сокета, по которому было получено сообщение.
+        //! @param guid GUID, полученная из сообщения.
+        //! @return Возвращает true, если GUID был успешно обработан, иначе false.
+        bool processGUID(const TcpSocketKey& key, const GUID& guid);
 
     protected slots:
         //! @brief Обрабатывает получение нового сообщения от транспортного уровня.
         //! @param key Ключ сокета
-        //! @param msg Сообщение, полученное от транспортного уровня, в виде QString.
-        void OnNewMessage(const TCPSocketKey& key, const QString& msg);
+        //! @param msg Сообщение, полученное от транспортного уровня, в виде QByteArray.
+        void OnNewMessage(const TcpSocketKey& key, const QByteArray& msg);
 
         //! @brief Обрабатывает событие таймера для управления ожиданием ответов.
         //! @param event Событие таймера, которое содержит идентификатор таймера.
@@ -39,18 +46,29 @@ namespace Ethernet
 
     private:
         //! @brief Указатель на транспортный уровень
-        QSharedPointer<TransportLayer> _transportLayer;
-
-        //! @brief Функция выделения запроса из всего сообщения
-        QString getRequestFromMessage(QString message);
+        std::unique_ptr<TransportLayer> _transportLayer {nullptr};
 
         //! @brief Набор идентификаторов запросов, которые ожидают ответа
-        QMap<int, TCPSocketKey> _waitingRequests;
+        QMap<int, TcpSocketKey> _waitingRequests;
+
+        //! @brief Хэш сокетов, которые уже были обработаны
+        //! @details Ключ - адрес:порт, значение - GUID
+        QHash<GUID, TcpSocketKey> _addressCache;
+
+        //! @brief Флаг, указывающий, включена ли криптография
+        //! @details Если true, то сообщения будут проверяться и расшифровываться.
+        bool _enableCryptography {false};
 
     signals:
         //! @brief Сигнал, который отправляется при получении нового HTTP-запроса.
+        //! @param guid GUID устройства, отправившего запрос.
         //! @param packet Объект HTTPPacket, содержащий разобранный HTTP-запрос.
-        void signalNewRequest(const TCPSocketKey&, const HTTPPacket&);
+        void signalNewRequest(const GUID&, const HTTPPacket&);
+
+        //! @brief Сигнал, который отправляется при получении нового GUID.
+        //! @param key Ключ сокета, по которому был получен GUID.
+        //! @param guid GUID устройства, полученный из сообщения.
+        void signalNewDeviceAddress(const TcpSocketKey& key, const GUID& guid);
     };
 };
 
