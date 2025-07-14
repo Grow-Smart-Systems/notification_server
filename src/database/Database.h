@@ -114,10 +114,7 @@ namespace Database
         qint64 getCurrentThreadID() const;
 
         //! @brief Указатель на соединение с базой данных
-        QSharedPointer<Connection> connection;
-
-        //! @brief
-        QHash<GUID, QString> _publicClientKeyHash;
+        std::unique_ptr<Connection> connection {nullptr};
     };
 }; // namespace Database
 

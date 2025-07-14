@@ -46,3 +46,4 @@ Makefile*
 build
 build/*
 notification_server
+server.conf

@@ -32,7 +32,7 @@ namespace Ethernet
 
         //! @brief Конструктор по умолчанию
         //! Создает пустой HTTPPacket
-        explicit HTTPPacket();
+        HTTPPacket();
 
         //! @brief Конструктор класса HTTPPacket
         //! @param message Исходное сообщение HTTP (по умолчанию пустое)

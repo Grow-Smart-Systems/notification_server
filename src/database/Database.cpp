@@ -267,7 +267,7 @@ bool Database::Database::runQueryAndCloseConnection(const QString& query, const 
 
 Database::Database::Database()
 {
-    connection = QSharedPointer<Connection>::create(
+    connection = std::make_unique<Connection>(
             Settings::GetInstance()->GetDatabaseName());
     if (!connection)
         qFatal("Failed to create database connection.");

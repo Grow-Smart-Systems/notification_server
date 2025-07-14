@@ -46,8 +46,8 @@ private:
     Settings()
     {
         // Инициализация настроек с файлом конфигурации по умолчанию
-        _settings = QSharedPointer<QSettings>::create(QDir::homePath() + "/.config/notification_server.conf", QSettings::IniFormat);
-        
+        _settings = QSharedPointer<QSettings>::create("server.conf", QSettings::IniFormat);
+
         // Убедимся, что файл настроек существует
         if(!_settings->fileName().isEmpty())
         {

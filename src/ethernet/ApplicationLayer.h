@@ -27,6 +27,8 @@ namespace Ethernet
         //! @param response Ответ в виде строки, который будет отправлен клиенту.
         void SendResponse(const GUID& guid, const QString& response);
 
+        //TODO: Добавить метод для отправки сообщения (не ответа) клиенту
+
     protected:
         //! @brief Обрабатывает получение GUID из сообщения.
         //! @param key Ключ сокета, по которому было получено сообщение.

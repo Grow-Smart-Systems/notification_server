@@ -103,6 +103,15 @@ namespace Ethernet
         else
         {
             //TODO получть GUID из кэша или базы по ключу подключения
+            // !!! Только для отладки. Не использование шифрования ошибочно по логике формирования сообщений !!!
+            auto cachedGuid = _addressCache.key(key);
+            if (!cachedGuid.IsNull())
+                guid = cachedGuid;
+            else
+            {
+                // Загрузим из БД guid по ключу (адрес+порт)
+            }
+
             message = QString::fromUtf8(msg);
         }
 
