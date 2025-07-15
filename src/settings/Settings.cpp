@@ -13,7 +13,12 @@ quint16 Settings::GetListenPort() const
 
 QString Settings::GetDatabaseName() const
 {
-    return _settings->value("database/name", "notification_server.db").toString();
+    return _settings->value("database/name", "server.db").toString();
+}
+
+void Settings::SetDatabaseName(const QString& name)
+{
+    _settings->setValue("database/name", name);
 }
 
 int Settings::GetKeyExpirationTime() const

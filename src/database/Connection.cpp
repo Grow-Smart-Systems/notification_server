@@ -34,6 +34,7 @@ bool Database::Connection::Open(const QString& connectionName)
         db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
         db.setDatabaseName(_dbPath);
     }
+    
     if (!db.open())
     {
         qCritical() << "Failed to open database for connection" << connectionName << ":" << db.lastError().text();

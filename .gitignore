@@ -38,12 +38,15 @@
 *.pro.user
 *.pro.user.*
 *.moc*
+moc_*
 *.qrc
 *.qmake.stash
 Makefile*
+target_wrapper.sh
 
 #project files
 build
 build/*
 notification_server
 server.conf
+*.db

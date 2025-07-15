@@ -26,10 +26,14 @@ public:
     //! @details По умолчанию 8080
     quint16 GetListenPort() const;
 
+    //! @brief Получить имя базы данных
+    //! @param name Имя базы данных
+    //! @details Если имя не указано, используется значение по умолчанию "server.db"
+    QString GetDatabaseName() const;
+
     //! @brief Установить имя базы данных
     //! @param name Имя базы данных
-    //! @details Если имя не указано, используется значение по умолчанию "notification_server.db"
-    QString GetDatabaseName() const;
+    void SetDatabaseName(const QString& name);
 
     //! @brief Получить время истечения ключа подключения
     //! @return Время истечения ключа подключения в днях

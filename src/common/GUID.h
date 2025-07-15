@@ -25,6 +25,13 @@ public:
     //! @brief Конструктор по умолчанию
     constexpr GUID() noexcept = default;
 
+    //! @brief Конструктор с параметром const char*
+    //! @param guid Строка GUID в формате const char*
+    GUID(const char* guid) : _guid(guid ? guid : NULL_GUID)
+    {
+        normalize();
+    }
+
     //! @brief Конструктор с параметром
     //! @param guid Строка GUID
     explicit GUID(std::string_view guid) : _guid(guid)

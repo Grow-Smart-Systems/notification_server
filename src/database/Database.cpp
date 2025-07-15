@@ -271,9 +271,10 @@ Database::Database::Database()
             Settings::GetInstance()->GetDatabaseName());
     if (!connection)
         qFatal("Failed to create database connection.");
+    qInfo() << "Database connection created successfully.";
 }
 
-qint64 Database::Database:: getCurrentThreadID() const
+qint64 Database::Database::getCurrentThreadID() const
 {
     return (quintptr)QThread::currentThreadId();
 }
