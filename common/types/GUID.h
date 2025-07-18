@@ -1,23 +1,17 @@
 #ifndef GUID_H
 #define GUID_H
 
-#include <QObject>
-#include <QString>
 #include <string>
 #include <string_view>
 #include <regex>
 #include <utility>
 #include <functional>
-#include <QHash>
 
 //! @brief Класс для работы с GUID
 //! @details Представляет собой уникальный идентификатор в формате "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 //! @note нулевой GUID имеет значение "00000000-0000-0000-0000-000000000000" и считается невалидным
 class GUID final
 {
-    Q_GADGET
-    Q_PROPERTY(QString guid READ toQString WRITE SetGuid)
-
     //! @brief Нулевой GUID
     static constexpr const char* NULL_GUID = "00000000-0000-0000-0000-000000000000";
 
@@ -49,13 +43,6 @@ public:
     //! @brief Конструктор с параметром std::string (move)
     //! @param guid Строка GUID
     explicit GUID(std::string&& guid) noexcept : _guid(std::move(guid))
-    {
-        normalize();
-    }
-
-    //! @brief Конструктор с параметром QString
-    //! @param guid Строка GUID в формате QString
-    explicit GUID(const QString& guid) : _guid(guid.toStdString())
     {
         normalize();
     }
@@ -112,10 +99,6 @@ public:
     //! @return Строка GUID
     const std::string& toString() const noexcept { return _guid; }
 
-    //! @brief Возвращает GUID в виде QString
-    //! @return QString GUID
-    QString toQString() const { return QString::fromStdString(_guid); }
-
     //! @brief Устанавливает GUID нулевым
     //! @details Устанавливает GUID в значение "00000000-0000-0000-0000-000000000000"
     void SetNull() noexcept
@@ -128,14 +111,6 @@ public:
     void SetGuid(std::string_view guid)
     {
         _guid = guid;
-        normalize();
-    }
-
-    //! @brief Устанавливает GUID из QString
-    //! @param guid Строка GUID в формате QString
-    void SetGuid(const QString& guid)
-    {
-        _guid = guid.toStdString();
         normalize();
     }
 
@@ -188,20 +163,5 @@ private:
     //! @note Изначально установлен в значение NULL_GUID
     std::string _guid{ NULL_GUID };
 };
-
-//! @brief Специализация std::hash для GUID
-//! @details Позволяет использовать GUID в std::unordered_map, std::unordered_set и т.д.
-namespace std {
-    template<>
-    struct hash<GUID> {
-        std::size_t operator()(const GUID& guid) const noexcept {
-            return guid.hash();
-        }
-    };
-}
-
-inline uint qHash(const GUID& guid, uint seed = 0) noexcept {
-    return ::qHash(QString::fromStdString(guid.toString()), seed);
-}
 
 #endif // GUID_H

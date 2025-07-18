@@ -50,3 +50,20 @@ build/*
 notification_server
 server.conf
 *.db
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt.user
+CMakeLists.txt.user.json
+CMakeLists.txt.user.jsonc
+
+# Userver
+*.userver.*
+*.userver.yaml
+
+# Userver build directory
+build
+
+# hidden folders
+.*/

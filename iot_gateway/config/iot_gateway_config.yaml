@@ -1,0 +1,41 @@
+logger:
+  level: info
+  file: logs/iot_gateway.log
+
+server:
+  listener:
+    port: 8080
+    address: 0.0.0.0
+  task_processors:
+    main:
+      worker_threads: 4
+
+components_manager:
+  components:
+    - name: server
+    - name: handler-ping
+    - name: http-client
+    - name: statistics-storage
+    - name: message-receiver
+    - name: message-decoder
+    - name: device-data-parser
+    - name: db-client
+    - name: message-router
+    - name: message-encoder
+    - name: message-sender
+    - name: command-processor
+    - name: metrics-collector
+    - name: error-handler
+
+http-client:
+  fs-task-processor: main
+
+handler-ping:
+  path: /ping
+  method: GET
+  task_processor: main
+
+statistics-storage:
+  dump:
+    file: stats.json
+    interval: 60s
