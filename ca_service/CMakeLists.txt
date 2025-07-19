@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.14)
+project(ca_service LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Рекурсивно собрать все .cpp и .hpp файлы из текущего каталога и вложенных
+file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")
+file(GLOB_RECURSE HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h")
+
+# Рекурсивно найти все proto-файлы в ../proto и вложенных
+file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../proto/**/*.proto")
+if(PROTO_FILES)
+    protobuf_generate(
+        LANGUAGE cpp
+        PROTOS ${PROTO_FILES}
+        OUT_VAR PROTO_GEN_SRCS
+    )
+else()
+    set(PROTO_GEN_SRCS "")
+endif()
+
+if(SOURCES)
+    add_executable(ca_service
+        ${SOURCES}
+        ${HEADERS}
+        ${PROTO_GEN_SRCS}
+    )
+    target_link_libraries(ca_service
+        userver::userver-core
+        protobuf::libprotobuf
+    )
+    target_include_directories(ca_service
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+endif()

@@ -1,38 +1,39 @@
 FROM ubuntu:22.04
 
-# Установим базовые утилиты и зависимости
-RUN apt update && apt install -y \
-    build-essential \
-    cmake \
-    git \
-    python3 \
-    python3-pip \
-    libssl-dev \
-    pkg-config \
-    qtbase5-dev \
-    libpq-dev \
-    libcurl4-openssl-dev \
-    wget
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Moscow
 
-# Установка userver
-RUN git clone https://github.com/userver-framework/userver.git /userver \
- && cd /userver \
- && mkdir build && cd build \
- && cmake .. \
- && make -j$(nproc) \
- && make install
+# Установим зависимости
+RUN apt-get update && \
+    apt-get install -y wget gdebi-core
+
+# Скачаем deb-пакет userver (замени ссылку на актуальную версию с GitHub Releases)
+ENV USERVER_DEB_URL=https://github.com/userver-framework/userver/releases/download/v2.10/ubuntu22.04-libuserver-all-dev_2.10_amd64.deb
+
+RUN wget $USERVER_DEB_URL -O /tmp/userver.deb && \
+    gdebi --non-interactive /tmp/userver.deb && \
+    rm /tmp/userver.deb
+
+# Проверка установки (опционально)
+RUN userver --version || true
 
 # Копируем исходники проекта
 WORKDIR /app
 COPY . /app
 
-# Сборка приложения
-RUN mkdir build && cd build \
- && cmake .. \
- && make -j$(nproc)
+
+# Сборка приложения с автоматическим поиском userverConfig.cmake
+RUN rm -rf build && mkdir build && \
+    cd build && \
+    cmake -Duserver_DIR=/userver .. && \
+    make -j$(nproc)
+
+RUN apt install -y tree
+RUN tree /app/build/ca_service
+
+RUN chmod +x /app/build/ca_service && \
+    chmod +x /app/build/iot_gateway
+
 
 # Открываем порт для сервиса
 EXPOSE 8080
-
-# Запуск сервиса (пример для userver)
-CMD ["./build/userver_service", "--config", "config/config.yaml"]

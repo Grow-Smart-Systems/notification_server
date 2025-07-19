@@ -1,16 +1,27 @@
 version: '3.8'
 services:
-  app:
+  iot_gateway:
     build: .
+    command: ["./build/iot_gateway", "--config", "config/iot_gateway_config.yaml"]
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app
     depends_on:
       - postgres
       - redis
     environment:
       - TZ=Europe/Moscow
+
+  ca_service:
+    build: .
+    command: ["./build/ca_service", "--config", "config/ca_service_config.yaml"]
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - TZ=Europe/Moscow
+
   postgres:
     image: postgres:15
     environment:
@@ -21,9 +32,11 @@ services:
       - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
+
   redis:
     image: redis:7
     ports:
       - "6379:6379"
+
 volumes:
   pg-data:
