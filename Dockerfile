@@ -25,8 +25,8 @@ COPY . /app
 # Сборка приложения с автоматическим поиском userverConfig.cmake
 RUN rm -rf build && mkdir build && \
     cd build && \
-    cmake -Duserver_DIR=/userver .. && \
-    make -j$(nproc)
+    cmake ..
+RUN cd build && make -j$(nproc)
 
 RUN apt install -y tree
 RUN tree /app/build/ca_service

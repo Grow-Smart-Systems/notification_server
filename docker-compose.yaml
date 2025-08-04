@@ -2,7 +2,10 @@ version: '3.8'
 services:
   iot_gateway:
     build: .
-    command: ["./build/iot_gateway", "--config", "config/iot_gateway_config.yaml"]
+    command: ["/app/build/iot_gateway", "--config", "config/iot_gateway_config.yaml"]
+    volumes:
+      - ./build_iot_gateway:/app/build
+
     ports:
       - "8080:8080"
     depends_on:
@@ -13,7 +16,9 @@ services:
 
   ca_service:
     build: .
-    command: ["./build/ca_service", "--config", "config/ca_service_config.yaml"]
+    command: ["/app/build/ca_service", "--config", "config/ca_service_config.yaml"]
+    volumes:
+      - ./build_ca_service:/app/build
     ports:
       - "8081:8081"
     depends_on:
