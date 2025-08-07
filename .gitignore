@@ -67,3 +67,30 @@ build/
 
 # hidden folders
 .*/
+
+# Project specific
+.env
+.env.*
+logs/
+ca_data/
+backups/
+postgres_data/
+redis_data/
+grafana_data/
+prometheus_data/
+elasticsearch_data/
+
+# SSL certificates
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
