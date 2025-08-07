@@ -6,11 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 # Рекурсивно собрать все .cpp и .hpp файлы из текущего каталога и вложенных
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp")
-file(GLOB_RECURSE HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h")
+file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
 # Рекурсивно найти все proto-файлы в ../proto и вложенных
-file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../proto/**/*.proto")
+file(GLOB_RECURSE PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../proto/*.proto")
 if(PROTO_FILES)
     protobuf_generate(
         LANGUAGE cpp
@@ -28,7 +28,7 @@ if(SOURCES)
         ${PROTO_GEN_SRCS}
     )
     target_link_libraries(iot_gateway
-        userver::userver-core
+        userver-core
         protobuf::libprotobuf
     )
     target_include_directories(iot_gateway

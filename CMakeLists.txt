@@ -11,7 +11,7 @@ set(USERVER_FEATURE_CLICKHOUSE OFF CACHE BOOL "Disable ClickHouse module in user
 find_package(Protobuf REQUIRED)
 
 # Adding userver dependency
-find_package(userver COMPONENTS core postgresql QUIET)
+find_package(userver COMPONENTS core)
 if(NOT userver_FOUND)  # Fallback to subdirectory usage
     # Enable userver libraries that are needed in this project
     set(USERVER_FEATURE_POSTGRESQL ON CACHE BOOL "" FORCE)

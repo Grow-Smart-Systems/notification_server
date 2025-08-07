@@ -1,15 +1,9 @@
-#pragma once
-
-#include <userver/components/component.hpp>
-
-#include "message_receiver.h"
-
+#include <iostream>
+#include <unistd.h>
 
 int main(int argc, char* argv[]) 
 {
-    return userver::components::Run(argc, argv, 
-        {
-            MessageReceiver::kName, MessageReceiver{}
-            // Здесь добавьте остальные ваши компоненты
-        });
+    std::cout << "Starting IoT Gateway..." << std::endl;
+    sleep(10); // Delay to demonstrate startup
+    return 0;
 }

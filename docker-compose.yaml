@@ -1,11 +1,11 @@
-version: '3.8'
 services:
   iot_gateway:
-    build: .
-    command: ["/app/build/iot_gateway", "--config", "config/iot_gateway_config.yaml"]
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+    command: ["/app/build/iot_gateway/iot_gateway"]
     volumes:
-      - ./build_iot_gateway:/app/build
-
+      - ./iot_gateway/config:/app/config
     ports:
       - "8080:8080"
     depends_on:
@@ -15,10 +15,12 @@ services:
       - TZ=Europe/Moscow
 
   ca_service:
-    build: .
-    command: ["/app/build/ca_service", "--config", "config/ca_service_config.yaml"]
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+    command: ["/app/build/ca_service/ca_service"]
     volumes:
-      - ./build_ca_service:/app/build
+      - ./ca_service/config:/app/config
     ports:
       - "8081:8081"
     depends_on:
@@ -27,12 +29,24 @@ services:
     environment:
       - TZ=Europe/Moscow
 
+  userver-latest:
+    build:
+      context: .
+      dockerfile: Dockerfile.builder
+    container_name: userver-app
+    restart: "no"
+    depends_on: 
+      - postgres
+      - redis
+    volumes:
+      - ./:/app
+
   postgres:
     image: postgres:15
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: notification_db
+      POSTGRES_DB: server_db
     ports:
       - "5432:5432"
     volumes:

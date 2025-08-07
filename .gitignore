@@ -63,7 +63,7 @@ CMakeLists.txt.user.jsonc
 *.userver.yaml
 
 # Userver build directory
-build
+build/
 
 # hidden folders
 .*/
