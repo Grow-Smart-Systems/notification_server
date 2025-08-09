@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(iot_gateway LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(back_gateway LANGUAGES CXX)
 
 
 # Рекурсивно собрать все .cpp и .hpp файлы из текущего каталога и вложенных
@@ -22,16 +19,16 @@ else()
 endif()
 
 if(SOURCES)
-    add_executable(iot_gateway
+    add_executable(back_gateway
         ${SOURCES}
         ${HEADERS}
         ${PROTO_GEN_SRCS}
     )
-    target_link_libraries(iot_gateway
-        userver-core
+    target_link_libraries(back_gateway
+        userver::core
         protobuf::libprotobuf
     )
-    target_include_directories(iot_gateway
+    target_include_directories(back_gateway
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_BINARY_DIR}
