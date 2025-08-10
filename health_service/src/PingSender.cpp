@@ -1,10 +1,9 @@
 #include "PingSender.h"
 
-#include <fstream>
 #include <grpcpp/grpcpp.h>
 #include "../build/protoc/health_service.grpc.pb.h"
 
-#define LOG_FILE_PATH "/app/health_service.log"
+#include "AsyncLogger.h"
 
 void PingSender::SendPing(ServiceInfo& address) 
 {
@@ -25,13 +24,29 @@ void PingSender::SendPing(ServiceInfo& address)
     grpc::ClientContext context;
     
     auto status = stub->Ping(&context, request, &reply);
-    std::ofstream log(LOG_FILE_PATH, std::ios::app);
+    std::string log_msg;
     if (status.ok()) 
     {
-        log << "[" << fullAddress << "] Ответ: " << reply.message() << std::endl;
+        std::lock_guard<std::mutex> lock(_serviceInfoMutex);
+        log_msg = "[" + getCurrentDateTime() + "] [" + fullAddress + "]\tОтвет: " + reply.message();
+        address.status = true;
     } 
     else 
     {
-        log << "[" << fullAddress << "] Ошибка: " << status.error_message() << std::endl;
+        std::lock_guard<std::mutex> lock(_serviceInfoMutex);
+        log_msg = "[" + getCurrentDateTime() + "] [" + fullAddress + "]\tОшибка: " + status.error_message();
+        address.status = false;
     }
+
+    if (g_logger) 
+        g_logger->log(log_msg);
+}
+
+std::string PingSender::getCurrentDateTime()
+{
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    char time_buf[32];
+    std::strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", &tm);
+    return std::string(time_buf);
 }

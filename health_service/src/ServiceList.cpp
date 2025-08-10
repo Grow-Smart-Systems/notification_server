@@ -10,10 +10,13 @@
 
 void ServiceList::UpdateServiceInfo()
 {
-    const char* json_path = std::getenv("SERVICES_JSON_PATH");
-    std::string path = json_path ? json_path : DEFAULT_JSON_PATH;
-    std::cout << "Загрузка списка сервисов из: " << path << std::endl;
-    _services = GetServiceListFromJson(path);
+    if (_jsonPath.empty())
+    {
+        const char* json_path = std::getenv("SERVICES_JSON_PATH");
+        _jsonPath = json_path ? json_path : DEFAULT_JSON_PATH;
+        std::cout << "Используемый путь к JSON-файлу: " << _jsonPath << std::endl;
+    }
+    _services = GetServiceListFromJson(_jsonPath);
 }
 
 std::vector<ServiceInfo>& ServiceList::GetServiceInfo() noexcept

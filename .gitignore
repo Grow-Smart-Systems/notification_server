@@ -83,6 +83,7 @@ elasticsearch_data/
 *.pem
 *.crt
 *.key
+*.csr
 *.p12
 *.pfx
 

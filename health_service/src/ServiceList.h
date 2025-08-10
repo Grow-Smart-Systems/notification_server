@@ -25,4 +25,7 @@ public:
 private:
     /// @brief Список сервисов
     std::vector<ServiceInfo> _services;
+
+    /// @brief Путь по умолчанию к JSON-файлу с сервисами
+    std::string _jsonPath;
 };

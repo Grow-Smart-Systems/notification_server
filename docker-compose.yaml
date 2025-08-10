@@ -82,9 +82,10 @@ services:
       - postgres
       - redis
     environment:
-      - TZ=Europe/Moscow
-      - SERVICES_JSON_PATH=${SERVICES_JSON_PATH}
-      - REQUEST_INTERVAL=${REQUEST_INTERVAL}
+      - TZ=${TZ}
+      - SERVICES_JSON_PATH=${HEALTH_SERVICE_SERVICES_JSON_PATH}
+      - REQUEST_INTERVAL=${HEALTH_SERVICE_REQUEST_INTERVAL}
+      - LOG_FILE_PATH=${HEALTH_SERVICE_LOG_FILE_PATH}
 
 # ========== Build services
 
