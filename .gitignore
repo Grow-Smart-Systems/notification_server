@@ -70,7 +70,6 @@ build/
 
 # Project specific
 .env
-.env.*
 logs/
 ca_data/
 backups/
@@ -94,3 +93,10 @@ elasticsearch_data/
 # OS
 .DS_Store
 Thumbs.db
+
+# keys and certificates
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx

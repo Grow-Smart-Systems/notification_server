@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.22)
 project(notification_server
     VERSION 1.0
     DESCRIPTION "Server using userver framework"
@@ -29,9 +29,10 @@ endif()
 
 userver_setup_environment()
 
-add_subdirectory(iot_gateway)
-add_subdirectory(ca_service)
-add_subdirectory(back_gateway)
+# add_subdirectory(iot_gateway)
+# add_subdirectory(ca_service)
+# add_subdirectory(back_gateway)
+add_subdirectory(health_service)
 
 # Install
 include(GNUInstallDirs)

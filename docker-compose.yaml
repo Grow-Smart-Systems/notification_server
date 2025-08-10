@@ -11,72 +11,96 @@ services:
   #     - back_gateway
 
 # ========== Single Services
-  iot_gateway:
-    container_name: iot_gateway
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile.builder
-    command: ["/app/build/iot_gateway/iot_gateway"]
+
+  # iot_gateway:
+  #   container_name: iot_gateway
+  #   restart: unless-stopped
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.builder
+  #   command: ["/app/build/iot_gateway/iot_gateway"]
+  #   volumes:
+  #     - ./iot_gateway/config:/app/config
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     - TZ=Europe/Moscow
+
+  # ca_service:
+  #   container_name: ca_service
+  #   restart: unless-stopped
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.builder
+  #   command: ["/app/build/ca_service/ca_service"]
+  #   volumes:
+  #     - ./ca_service/config:/app/config
+  #     - ./back_gateway/certs:/app/certs
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     - TZ=Europe/Moscow
+
+  # back_gateway:
+  #   container_name: back_gateway
+  #   restart: unless-stopped
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.builder  
+  #   command: ["/app/build/back_gateway/back_gateway", "--config", "/app/config/back_gateway_config.yaml"]
+  #   volumes:
+  #     - ./back_gateway/config:/app/config
+  #     - ./back_gateway/certs:/app/certs
+  #     - ./common/certs:/app/common/certs
+  #   ports:
+  #     - "50051:50051"
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   environment:
+  #     - TZ=Europe/Moscow
+
+  health_service:
+    container_name: health_service
+    image: ghcr.io/userver-framework/ubuntu-22.04-userver:latest
+    command: ["/app/health_service", "--config", "/app/config/health_service_config.yaml"]
+    working_dir: /app
     volumes:
-      - ./iot_gateway/config:/app/config
+      - ./build/health_service:/app/:rw
+      - ./health_service/config:/app/config:ro
+      - ./health_service/certs:/app/certs:ro
+      - ./common/certs:/app/common/certs:ro
     ports:
-      - "8080:8080"
+      - "5000:5000"
     depends_on:
       - postgres
       - redis
     environment:
       - TZ=Europe/Moscow
+      - SERVICES_JSON_PATH=${SERVICES_JSON_PATH}
+      - REQUEST_INTERVAL=${REQUEST_INTERVAL}
 
-  ca_service:
-    container_name: ca_service
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile.builder
-    command: ["/app/build/ca_service/ca_service"]
-    volumes:
-      - ./ca_service/config:/app/config
-    ports:
-      - "8081:8081"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      - TZ=Europe/Moscow
+# ========== Build services
 
-  back_gateway:
-    container_name: back_gateway
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile.builder
-    command: ["/app/build/back_gateway/back_gateway"]
-    volumes:
-      - ./back_gateway/config:/app/config
-    ports:
-      - "8082:8082"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      - TZ=Europe/Moscow
-
-# ========== Build service for userver
   userver-latest:
+    container_name: builder
     privileged: true
     build:
       context: .
       dockerfile: Dockerfile.builder
-    container_name: userver-app
     restart: "no"
-    depends_on: 
-      - postgres
-      - redis
     volumes:
-      - ./:/app
+      - ./build:/app/build:rw
+    command: bash -c "rm -rf /app/build/* && cp -vfR /app/build_artifacts/* /app/build"
 
 # ========== Database services
+
   postgres:
     image: postgres:15
     environment:
@@ -95,3 +119,4 @@ services:
 
 volumes:
   pg-data:
+  build-artifacts:

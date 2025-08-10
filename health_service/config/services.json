@@ -1,0 +1,17 @@
+[
+  {
+    "name": "back_gateway",
+    "address": "127.0.0.1",
+    "port": 50051
+  },
+  {
+    "name": "ca_service",
+    "address": "127.0.0.1",
+    "port": 8081
+  },
+  {
+    "name": "iot_gateway",
+    "address": "127.0.0.1",
+    "port": 5000
+  }
+]
