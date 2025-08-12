@@ -69,13 +69,13 @@ services:
   health_service:
     container_name: health_service
     image: ghcr.io/userver-framework/ubuntu-22.04-userver:latest
-    command: ["/app/health_service", "--config", "/app/config/health_service_config.yaml"]
-    working_dir: /app
+    command: ["${APP_FOLDER}/health_service", "--config", "${APP_FOLDER}/config/health_service_config.yaml"]
+    working_dir: ${APP_FOLDER}
     volumes:
-      - ./build/health_service:/app/:rw
-      - ./health_service/config:/app/config:ro
-      - ./health_service/certs:/app/certs:ro
-      - ./common/certs:/app/common/certs:ro
+      - ./build/health_service:${APP_FOLDER}/:rw
+      - ./health_service/config:${APP_FOLDER}/config:ro
+      - ./health_service/certs:${APP_FOLDER}/certs:ro
+      - ./common/certs:${APP_FOLDER}/common/certs:ro
     ports:
       - "5000:5000"
     depends_on:
@@ -93,12 +93,15 @@ services:
     container_name: builder
     privileged: true
     build:
+      args:
+       APP_FOLDER: ${APP_FOLDER}
+       BUILD_TYPE: ${BUILD_TYPE}
       context: .
       dockerfile: Dockerfile.builder
     restart: "no"
     volumes:
-      - ./build:/app/build:rw
-    command: bash -c "rm -rf /app/build/* && cp -vfR /app/build_artifacts/* /app/build"
+      - ./build:${APP_FOLDER}/build:rw
+    command: bash -c "cd ${APP_FOLDER}/scripts/ && sh build.sh"
 
 # ========== Database services
 
