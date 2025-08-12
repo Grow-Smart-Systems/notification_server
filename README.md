@@ -4,12 +4,13 @@
 
 ## 🏗 Архитектура
 
-Проект состоит из следующих компонентов:
+Компоненты:
 
-- **IoT Gateway** - шлюз для IoT устройств (порт 8080)
-- **CA Service** - сервис центра сертификации (порт 8081)
-- **PostgreSQL** - база данных (порт 5432)
-- **Redis** - кэш и брокер сообщений (порт 6379)
+- **IoT Gateway** — шлюз для IoT устройств (порт 8080)
+- **CA Service** — центр сертификации (порт 8081)
+- **Health Service** — проверка состояния сервисов (порт 5000)
+- **PostgreSQL** — база данных (порт 5432)
+- **Redis** — кэш и брокер сообщений (порт 6379)
 
 ## Требования
 
@@ -28,69 +29,99 @@ cd notification_server
 
 ### 2. Сборка и запуск
 
+#### 2.1. Сборка артефактов (builder)
+Сбор выполняет контейнер `userver-latest`, копируя бинарники в локальный каталог `build/` (смонтирован в контейнер).
+
 ```bash
-# Сборка всех образов
-docker-compose build
-
-# Запуск всех сервисов в фоновом режиме
-docker-compose up -d
-
-# Проверка статуса сервисов
-docker-compose ps
+docker compose up --build userver-latest
 ```
+
+После завершения контейнер остановится, а артефакты будут лежать в `./build/`.
+
+#### 2.2. Запуск сервисов
+Пример для health_service:
+
+```bash
+docker compose up -d health_service
+```
+
+Можно запускать несколько сервисов (при их добавлении):
+
+```bash
+docker compose up -d health_service iot_gateway ca_service
+```
+
+#### 2.3. Общий цикл разработки
+1. Внести изменения в исходный код
+2. Пересобрать артефакты: `docker compose up --build userver-latest`
+3. Перезапустить/запустить нужные сервисы: `docker compose up -d health_service`
+
+#### 2.4. Важно
+- Контейнер `userver-latest` используется только для сборки.
+- При изменении кода всегда повторяйте сборку.
+- Артефакты не живут внутри рантайм-контейнера — они примонтированы из хоста.
 
 ### 3. Проверка работы
 
 ```bash
-# Просмотр логов всех сервисов
-docker-compose logs
+# Логи всех сервисов
+docker compose logs
 
-# Просмотр логов конкретного сервиса
-docker-compose logs iot_gateway
-docker-compose logs ca_service
+# Логи конкретного сервиса
+docker compose logs health_service
 
-# Проверка доступности сервисов
-curl http://localhost:8080  # IoT Gateway
-curl http://localhost:8081  # CA Service
+# Проверка HTTP/GRPC доступности (если применимо)
+curl http://localhost:5000 || true
 ```
 
-## Команды управления
-
-### Остановка сервисов
+### 4. Команды управления
 
 ```bash
 # Остановка всех сервисов
-docker-compose down
+docker compose down
 
 # Остановка с удалением volumes
-docker-compose down -v
-```
+docker compose down -v
 
-### Пересборка
-
-```bash
-# Пересборка конкретного сервиса
-docker-compose build iot_gateway
+# Пересборка конкретного сервиса (если будет отдельный build context)
+docker compose build health_service
 
 # Полная пересборка без кэша
-docker-compose build --no-cache
+docker compose build --no-cache
 
-# Принудительная пересборка и перезапуск
-docker-compose up --build -d
+# Принудительная пересборка и запуск
+docker compose up --build -d health_service
+
+# Логи в реальном времени
+docker compose logs -f health_service
+
+# Просмотр процессов
+docker compose top
 ```
 
-### Мониторинг
+## Конфигурация
 
-```bash
-# Просмотр ресурсов
-docker-compose top
+### Переменные окружения (пример для health_service)
 
-# Просмотр логов в реальном времени
-docker-compose logs -f
+- `TZ` — часовой пояс (например Europe/Moscow)
+- `HEALTH_SERVICE_SERVICES_JSON_PATH` — путь к JSON со списком сервисов внутри контейнера (напр. `/app/config/services.json`)
+- `HEALTH_SERVICE_REQUEST_INTERVAL` — интервал между опросами (секунды)
+- `HEALTH_SERVICE_LOG_FILE_PATH` — путь к лог-файлу (напр. `/app/health_service.log`)
 
-# Просмотр логов конкретного сервиса
-docker-compose logs -f iot_gateway
-```
+### Порты
+
+- `8080` — IoT Gateway
+- `8081` — CA Service
+- `5000` — Health Service
+- `5432` — PostgreSQL
+- `6379` — Redis
+
+### Volumes (из docker-compose.yaml)
+
+- `./health_service/config:/app/config` — конфиги health_service
+- `./health_service/certs:/app/certs` — сертификаты сервиса
+- `./common/certs:/app/common/certs` — общий CA
+- `./build/health_service:/app/` — собранные бинарники (артефакты)
 
 ## Разработка
 
@@ -98,157 +129,33 @@ docker-compose logs -f iot_gateway
 
 ```
 notification_server/
-├── docker-compose.yaml     # Конфигурация Docker Compose
-├── Dockerfile.builder      # Dockerfile для сборки C++ приложений
-├── CMakeLists.txt          # Главный файл CMake
-├── iot_gateway/            # IoT Gateway сервис
-│   ├── CMakeLists.txt
-│   ├── config/
-│   └── src/
-│       └── main.cpp
-├── ca_service/             # CA Service сервис
-│   ├── CMakeLists.txt
-│   ├── config/
-│   └── src/
-│       └── main.cpp
-├── common/                 # Общие компоненты
-├── proto/                  # Protocol Buffers схемы
-└── scripts/               # Скрипты для развертывания
+├── docker-compose.yaml
+├── Dockerfile.builder
+├── CMakeLists.txt
+├── health_service/
+├── iot_gateway/
+├── ca_service/
+├── common/
+├── proto/
+└── scripts/
 ```
 
 ### Оптимизация сборки
-
-Проект использует многослойное Docker кэширование для оптимизации времени сборки:
-
-- **Первая сборка**: ~25 секунд (установка всех зависимостей)
-- **Последующие сборки**: ~1 секунда (благодаря кэшированию)
-
-Кэширование работает на уровне:
-1. Системных пакетов (apt)
-2. Внешних библиотек (date library)
-3. userver зависимостей
-4. CMake конфигурации
-5. Исходного кода
-
-### Добавление нового сервиса
-
-1. Создайте директорию для сервиса:
-```bash
-mkdir new_service
-mkdir new_service/src
-mkdir new_service/config
-```
-
-2. Создайте CMakeLists.txt для сервиса:
-```cmake
-cmake_minimum_required(VERSION 3.14)
-project(new_service LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-file(GLOB_RECURSE HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
-
-if(SOURCES)
-    add_executable(new_service ${SOURCES} ${HEADERS})
-    target_link_libraries(new_service userver-core)
-    target_include_directories(new_service PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-```
-
-3. Добавьте сервис в docker-compose.yaml:
-```yaml
-  new_service:
-    build:
-      context: .
-      dockerfile: Dockerfile.builder
-    command: ["/app/build/new_service/new_service"]
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      - TZ=Europe/Moscow
-```
-
-4. Добавьте в корневой CMakeLists.txt:
-```cmake
-add_subdirectory(new_service)
-```
-
-## Конфигурация
-
-### Переменные окружения
-
-- `TZ` - часовой пояс (по умолчанию: Europe/Moscow)
-- `POSTGRES_URL` - URL подключения к PostgreSQL
-- `REDIS_URL` - URL подключения к Redis
-
-### Порты
-
-- `8080` - IoT Gateway
-- `8081` - CA Service  
-- `5432` - PostgreSQL
-- `6379` - Redis
-
-### Volumes
-
-- `./iot_gateway/config:/app/config` - конфигурация IoT Gateway
-- `./ca_service/config:/app/config` - конфигурация CA Service
+- Используется кэширование слоёв Docker.
+- Пересобирайте только после изменений исходников.
 
 ## Troubleshooting
 
-### Проблемы сборки
-
-1. **Ошибка "nothing starts, build outputs nothing"**:
-   ```bash
-   # Очистите Docker кэш
-   docker system prune -a
-   docker-compose build --no-cache
-   ```
-
-2. **Ошибка CMake cache compatibility**:
-   ```bash
-   # Удалите локальную папку build
-   rm -rf build/
-   docker-compose build --no-cache
-   ```
-
-3. **Ошибка "libdate-dev not found"**:
-   - Библиотека date устанавливается автоматически из исходников в Dockerfile.builder
-
-### Проблемы запуска
-
-1. **Контейнер сразу останавливается**:
-   ```bash
-   # Проверьте логи
-   docker-compose logs [service_name]
-   
-   # Запустите в интерактивном режиме
-   docker-compose run --rm iot_gateway bash
-   ```
-
-2. **Порты заняты**:
-   ```bash
-   # Найдите процессы, использующие порты
-   netstat -tlnp | grep :8080
-   
-   # Измените порты в docker-compose.yaml
-   ports:
-     - "8082:8080"  # внешний:внутренний
-   ```
-
-### Очистка
-
 ```bash
-# Остановка и удаление всех контейнеров
-docker-compose down -v
+# Очистка кэша и пересборка
+docker system prune -a
+docker compose build --no-cache
 
-# Удаление неиспользуемых образов
-docker image prune -a
+# Логи
+docker compose logs health_service
 
-# Полная очистка Docker
-docker system prune -a --volumes
+# Интерактивная отладка
+docker compose run --rm health_service bash
 ```
 
 ## Лицензия
